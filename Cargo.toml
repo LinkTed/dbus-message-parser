@@ -12,8 +12,7 @@ exclude = [
 repository = "https://github.com/LinkTed/dbus-message-parser"
 categories = [
     "parser-implementations",
-    "encoding",
-    "decoding"
+    "encoding"
     ]
 
 [dependencies]
