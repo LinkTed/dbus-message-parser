@@ -1,0 +1,3 @@
+This crate was inspired by the code of "dbus-serialize"[1]. NO CODE WAS COPIED.
+
+[1]: https://github.com/srwalter/dbus-serialize
