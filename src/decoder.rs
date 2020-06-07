@@ -63,4 +63,12 @@ where
             offset_fds,
         }
     }
+
+    pub fn get_offset(&self) -> usize {
+        self.offset
+    }
+
+    pub fn get_offset_fds(&self) -> usize {
+        self.offset_fds
+    }
 }
