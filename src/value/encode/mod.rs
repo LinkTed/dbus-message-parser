@@ -1,12 +1,10 @@
-use super::Value;
-use crate::{EncodeResult, Encoder};
-
 mod basic_type;
-
 mod container;
-
 #[cfg(test)]
 mod tests;
+
+use super::Value;
+use crate::{EncodeResult, Encoder};
 
 impl<'a> Encoder<'a> {
     /// Encode a `Value` object to a byte array.
