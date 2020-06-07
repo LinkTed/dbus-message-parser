@@ -18,7 +18,7 @@ then
     # Create code coverage (gcno and gcda files)
     cargo test --verbose --all
     # Pack the gcno and gcda files into a zip file
-    zip -0 ccov.zip `find . \( -name "dns_message_parser*.gc*" \) -print`
+    zip -0 ccov.zip `find . \( -name "dbus_message_parser*.gc*" \) -print`
     # Convert gcno and gcda files into lcov
     ./grcov ccov.zip -s . -t lcov --llvm --branch \
     --ignore-not-existing --ignore "/*" -o lcov.info
