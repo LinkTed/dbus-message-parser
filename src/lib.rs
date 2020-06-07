@@ -7,7 +7,6 @@ extern crate bitflags;
 
 use regex::Regex;
 
-
 lazy_static! {
     /// The regular expression for a valid [object path].
     ///
@@ -15,9 +14,20 @@ lazy_static! {
     static ref OBJECT_PATH_REGEX: Regex = Regex::new("/([A-Za-z0-9_]+(/[A-Za-z0-9_]+)*)?").unwrap();
 }
 
-mod value;
-mod header;
-mod message;
+mod decoder;
+pub use decoder::Decoder;
 
-pub use value::{Value, DecodeError, EncodeError};
-pub use message::{Message, MessageType, MessageHeader};
+mod encoder;
+pub use encoder::Encoder;
+
+mod error;
+pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
+
+mod header;
+pub use header::Header;
+
+mod message;
+pub use message::{Message, MessageFlags, MessageHeader, MessageType};
+
+mod value;
+pub use value::Value;

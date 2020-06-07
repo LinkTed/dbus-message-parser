@@ -9,15 +9,14 @@ A library to encode and decode [DBus message](https://dbus.freedesktop.org/doc/d
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-dbus-message-parser = "1.0"
+dbus-message-parser = "2.0"
 ```
 
 ## Example
-The following examples show how to create a `METHOD_CALL` message and a `SIGNAL`
- message.
+The following examples show how to create a `METHOD_CALL` message and a `SIGNAL` message.
 ```rust
-use dbus_message_parser::{Message, Value};
-use bytes::BytesMut;
+use bytes::{Bytes, BytesMut};
+use dbus_message_parser::{Decoder, Encoder, Message, Value};
 
 fn create_method_call() {
     // Create a MessageCall
@@ -26,10 +25,12 @@ fn create_method_call() {
     // 2. object path
     // 3. interface
     // 4. method
-    let mut msg = Message::method_call("destination.address",
-                                       "/object/path",
-                                       "interface.name",
-                                       "MethodName");
+    let mut msg = Message::method_call(
+        "destination.address",
+        "/object/path",
+        "interface.name",
+        "MethodName",
+    );
 
     // Add the first argument to the MessageCall
     msg.add_value(Value::String("String Argument".to_string()));
@@ -39,7 +40,9 @@ fn create_method_call() {
     println!("{:?}", msg);
 
     let mut buffer = BytesMut::new();
-    msg.encode(&mut buffer).unwrap();
+    let mut fds = Vec::new();
+    let mut encoder = Encoder::new(&mut buffer, &mut fds);
+    encoder.message(&msg).unwrap();
 
     println!("{:?}", buffer);
 }
@@ -50,9 +53,7 @@ fn create_signal() {
     // 1. object path
     // 2. interface
     // 3. Signal name
-    let mut signal = Message::signal("/object/path",
-                                     "interface.name",
-                                     "SignalName");
+    let mut signal = Message::signal("/object/path", "interface.name", "SignalName");
 
     // Add the first argument to the MessageCall
     signal.add_value(Value::Uint32(0));
@@ -62,8 +63,27 @@ fn create_signal() {
     println!("{:?}", signal);
 
     let mut buffer = BytesMut::new();
-    signal.encode(&mut buffer).unwrap();
+    let mut fds = Vec::new();
+    let mut encoder = Encoder::new(&mut buffer, &mut fds);
+    encoder.message(&signal).unwrap();
 
     println!("{:?}", buffer);
+}
+
+fn decode_method_call() {
+    let bytes = Bytes::copy_from_slice(
+        &b"\x6c\x01\x00\x01\x0a\x00\x00\x00\xb1\x00\x00\x00\x9e\x00\x00\x00\x01\x01\x6f\x00\x15\x00\
+        \x00\x00\x2f\x6f\x72\x67\x2f\x66\x72\x65\x65\x64\x65\x73\x6b\x74\x6f\x70\x2f\x44\x42\x75\
+        \x73\x00\x00\x00\x02\x01\x73\x00\x14\x00\x00\x00\x6f\x72\x67\x2e\x66\x72\x65\x65\x64\x65\
+        \x73\x6b\x74\x6f\x70\x2e\x44\x42\x75\x73\x00\x00\x00\x00\x06\x01\x73\x00\x14\x00\x00\x00\
+        \x6f\x72\x67\x2e\x66\x72\x65\x65\x64\x65\x73\x6b\x74\x6f\x70\x2e\x44\x42\x75\x73\x00\x00\
+        \x00\x00\x08\x01\x67\x00\x01\x73\x00\x00\x03\x01\x73\x00\x1a\x00\x00\x00\x47\x65\x74\x43\
+        \x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e\x55\x6e\x69\x78\x50\x72\x6f\x63\x65\x73\x73\x49\x44\
+        \x00\x00\x00\x00\x00\x00\x07\x01\x73\x00\x05\x00\x00\x00\x3a\x31\x2e\x35\x30\x00\x00\x00\
+        \x05\x00\x00\x00\x3a\x31\x2e\x35\x35\x00"[..],
+    );
+    let mut decoder = Decoder::new(&bytes);
+    let msg = decoder.message();
+    println!("Message is decoded: {:?}", msg);
 }
 ```

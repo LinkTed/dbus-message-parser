@@ -1,6 +1,5 @@
-use dbus_message_parser::{Message, Value};
 use bytes::BytesMut;
-
+use dbus_message_parser::{Encoder, Message, Value};
 
 fn main() {
     // Create a Signal
@@ -8,9 +7,7 @@ fn main() {
     // 1. object path
     // 2. interface
     // 3. Signal name
-    let mut signal = Message::signal("/object/path",
-                                     "interface.name",
-                                     "SignalName");
+    let mut signal = Message::signal("/object/path", "interface.name", "SignalName");
 
     // Add the first argument to the MessageCall
     signal.add_value(Value::Uint32(0));
@@ -20,7 +17,9 @@ fn main() {
     println!("{:?}", signal);
 
     let mut buffer = BytesMut::new();
-    signal.encode(&mut buffer).unwrap();
+    let mut fds = Vec::new();
+    let mut encoder = Encoder::new(&mut buffer, &mut fds);
+    encoder.message(&signal).unwrap();
 
     println!("{:?}", buffer);
 }

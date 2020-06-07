@@ -1,11 +1,11 @@
-use std::cmp::Ordering;
+use crate::{DecodeError, Value, OBJECT_PATH_REGEX};
 use regex::Regex;
-use crate::{OBJECT_PATH_REGEX, Value, DecodeError};
+use std::convert::TryFrom;
 
 /// An enum representing a [header field].
 ///
 /// [header field]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-fields
-#[derive(Debug, Eq, Clone, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord)]
 pub enum Header {
     Path(String),
     Interface(String),
@@ -17,15 +17,10 @@ pub enum Header {
     Signature(String),
 }
 
-impl PartialEq for Header {
-    fn eq(&self, other: &Header) -> bool {
-        self.cmp(other) == Ordering::Equal
-    }
-}
+impl TryFrom<Value> for Header {
+    type Error = DecodeError;
 
-impl Header {
-    /// Parse a header field from a Value of the type `(yv)`.
-    pub fn from(v: Value) -> Result<Header, DecodeError> {
+    fn try_from(v: Value) -> Result<Self, Self::Error> {
         // The outer `Value` has to be a struct.
         if let Value::Struct(mut values) = v {
             // The length of the struct have to be 2
@@ -62,7 +57,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         2 => {
                             // The header field is an Interface.
                             if let Value::String(s) = v {
@@ -82,7 +77,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         3 => {
                             // The header field is an Interface.
                             if let Value::String(s) = v {
@@ -102,7 +97,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         4 => {
                             // The header field is an ErrorName.
                             if let Value::String(s) = v {
@@ -110,7 +105,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         5 => {
                             // The header field is a ReplySerial.
                             if let Value::Uint32(u) = v {
@@ -118,7 +113,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         6 => {
                             // The header field is a Destination.
                             if let Value::String(s) = v {
@@ -130,7 +125,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         7 => {
                             // The header field is a Sender.
                             if let Value::String(s) = v {
@@ -142,7 +137,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         8 => {
                             // The header field is a Signature.
                             if let Value::Signature(s) = v {
@@ -150,7 +145,7 @@ impl Header {
                             } else {
                                 Err(DecodeError::Header)
                             }
-                        },
+                        }
                         _ => {
                             // Invalid number.
                             Err(DecodeError::Header)
@@ -166,60 +161,4 @@ impl Header {
             Err(DecodeError::Header)
         }
     }
-
-    /// Convert a `Header` object to a `Value`.
-    pub fn into_value(self) -> Value {
-        let (b, v) = match self {
-            Header::Path(s) => {
-                (Value::Byte(1), Value::ObjectPath(s))
-            },
-            Header::Interface(s) => {
-                (Value::Byte(2), Value::String(s))
-            },
-            Header::Member(s) => {
-                (Value::Byte(3), Value::String(s))
-            },
-            Header::ErrorName(s) => {
-                (Value::Byte(4), Value::String(s))
-            },
-            Header::ReplySerial(u) => {
-                (Value::Byte(5), Value::Uint32(u))
-            },
-            Header::Destination(s) => {
-                (Value::Byte(6), Value::String(s))
-            },
-            Header::Sender(s) => {
-                (Value::Byte(7), Value::String(s))
-            },
-            Header::Signature(s) => {
-                (Value::Byte(8), Value::Signature(s))
-            },
-        };
-
-        Value::Struct(vec![b, Value::Variant(vec![v])])
-    }
-}
-
-
-#[cfg(test)]
-use std::collections::BTreeSet;
-
-
-#[test]
-fn test_header_1() {
-    let b = Value::Byte(1);
-    let v = Value::Variant(vec![Value::ObjectPath("/".to_string())]);
-    let header = Header::from(Value::Struct(vec![b, v])).unwrap();
-
-    let mut tree = BTreeSet::new();
-    tree.insert(header);
-
-    let b = Value::Byte(1);
-    let v = Value::Variant(vec![Value::ObjectPath("/a/".to_string())]);
-    let header = Header::from(Value::Struct(vec![b, v])).unwrap();
-
-    let mut tree = BTreeSet::new();
-    tree.insert(header);
-
-    assert_eq!(tree.len(), 1);
 }

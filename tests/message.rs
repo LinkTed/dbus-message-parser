@@ -1,17 +1,17 @@
-use dbus_message_parser::Message;
-use bytes::BytesMut;
-
+use bytes::{Bytes, BytesMut};
+use dbus_message_parser::{Decoder, Encoder};
 
 fn decode_encode(msg: &[u8]) {
-    let mut offset: usize = 0;
-    // Decode BytesMut to Message
-    let bytes_mut = BytesMut::from(&msg[..]);
-    // Decode BytesMut to Message
-    let msg = Message::decode(&bytes_mut, &mut offset).unwrap();
-    // Create a empty BytesMut
-    let mut bytes_mut = BytesMut::new();
+    // Decode Bytes to Message
+    let bytes = Bytes::copy_from_slice(&msg[..]);
+    let mut decoder = Decoder::new(&bytes);
+    let msg = decoder.message().unwrap();
+
     // Encode Message to BytesMut
-    msg.encode(&mut bytes_mut).unwrap();
+    let mut bytes = BytesMut::new();
+    let mut fds = Vec::new();
+    let mut encoder = Encoder::new(&mut bytes, &mut fds);
+    encoder.message(&msg).unwrap();
 }
 
 #[test]

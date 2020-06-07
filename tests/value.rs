@@ -1,6 +1,5 @@
 use dbus_message_parser::Value;
 
-
 #[test]
 fn value() {
     // Create two uint32 value
