@@ -1,11 +1,16 @@
 use crate::{
     DecodeError, DecodeResult, Decoder, Header, MessageFlags, MessageHeader, MessageType, Value,
 };
+use bytes::Buf;
 use num_traits::FromPrimitive;
 use std::collections::BTreeSet;
 use std::convert::TryFrom;
+use std::ops::Deref;
 
-impl<'a> Decoder<'a> {
+impl<'a, T> Decoder<'a, T>
+where
+    T: Buf + Deref<Target = [u8]>,
+{
     pub fn message_header(&mut self) -> DecodeResult<(MessageHeader, Option<(u32, String)>)> {
         let signature = "yyyuua(yv)";
 

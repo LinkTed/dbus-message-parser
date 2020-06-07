@@ -1,15 +1,22 @@
 use crate::{DecodeError, DecodeResult};
-use bytes::Bytes;
+use bytes::Buf;
+use std::ops::Deref;
 use std::os::unix::io::RawFd;
 
-pub struct Decoder<'a> {
-    pub(crate) buf: &'a Bytes,
+pub struct Decoder<'a, T>
+where
+    T: Buf + Deref<Target = [u8]>,
+{
+    pub(crate) buf: &'a T,
     pub(crate) offset: usize,
     pub(crate) fds: &'a [RawFd],
     pub(crate) offset_fds: usize,
 }
 
-impl<'a> Decoder<'a> {
+impl<'a, T> Decoder<'a, T>
+where
+    T: Buf + Deref<Target = [u8]>,
+{
     /// This is a helper function to add the algin to the offset.
     pub(crate) fn algin(&mut self, a: usize) -> DecodeResult<()> {
         while self.offset % a != 0 {
@@ -25,7 +32,7 @@ impl<'a> Decoder<'a> {
         Ok(())
     }
 
-    pub fn new(buf: &'a Bytes) -> Decoder<'a> {
+    pub fn new(buf: &'a T) -> Decoder<'a, T> {
         Decoder {
             buf,
             offset: 0,
@@ -34,7 +41,7 @@ impl<'a> Decoder<'a> {
         }
     }
 
-    pub fn with_offset(buf: &'a Bytes, offset: usize) -> Decoder {
+    pub fn with_offset(buf: &'a T, offset: usize) -> Decoder<'a, T> {
         Decoder {
             buf,
             offset,
@@ -44,11 +51,11 @@ impl<'a> Decoder<'a> {
     }
 
     pub fn with_fds(
-        buf: &'a Bytes,
+        buf: &'a T,
         offset: usize,
         fds: &'a [RawFd],
         offset_fds: usize,
-    ) -> Decoder<'a> {
+    ) -> Decoder<'a, T> {
         Decoder {
             buf,
             offset,

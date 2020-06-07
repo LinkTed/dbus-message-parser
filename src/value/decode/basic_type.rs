@@ -2,8 +2,12 @@ use crate::{DecodeError, DecodeResult, Decoder, Value, OBJECT_PATH_REGEX};
 use bytes::Buf;
 use std::cmp::max;
 use std::mem::size_of;
+use std::ops::Deref;
 
-impl<'a> Decoder<'a> {
+impl<'a, T> Decoder<'a, T>
+where
+    T: Buf + Deref<Target = [u8]>,
+{
     pub(crate) fn b(&mut self) -> DecodeResult<u8> {
         let start = self.offset;
         self.offset += size_of::<u8>();
