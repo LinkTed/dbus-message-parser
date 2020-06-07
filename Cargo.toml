@@ -7,8 +7,14 @@ readme = "README.md"
 authors = ["LinkTed <link.ted@mailbox.org>"]
 license = "LGPL-3.0"
 keywords = ["dbus", "parser"]
-exclude = [
-    ".gitignore",
+include = [
+    "src/**/*.rs",
+    "tests/*.rs",
+    "examples/*.rs", 
+    "Cargo.toml",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
     ]
 repository = "https://github.com/LinkTed/dbus-message-parser"
 categories = [
