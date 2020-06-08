@@ -15,19 +15,15 @@ lazy_static! {
 }
 
 mod decoder;
-pub use decoder::Decoder;
-
 mod encoder;
-pub use encoder::Encoder;
-
 mod error;
-pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
-
 mod header;
-pub use header::Header;
-
 mod message;
-pub use message::{Message, MessageFlags, MessageHeader, MessageType};
-
 mod value;
+
+pub use decoder::Decoder;
+pub use encoder::Encoder;
+pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
+pub use header::Header;
+pub use message::{Message, MessageFlags, MessageHeader, MessageType};
 pub use value::Value;
