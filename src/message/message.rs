@@ -119,14 +119,13 @@ impl Message {
         self.header.get_destination()
     }
 
-    /// It is true if the message contains an `Signature` in the header fields.
-    pub fn has_signature(&self) -> bool {
-        self.header.has_signature()
-    }
-
     /// Get the `Signature`, if there is one in the header field.
-    pub fn get_signature(&self) -> Option<&str> {
-        self.header.get_signature()
+    pub fn get_signature(&self) -> String {
+        let mut signature = String::new();
+        for v in &self.body {
+            v.get_signature(&mut signature);
+        }
+        signature
     }
 
     /// Add a new value to the body.
@@ -184,16 +183,11 @@ impl Message {
     }
 
     /// Split the `Message` object into the header and the body.
-    pub fn split(self) -> (MessageHeader, Vec<Value>) {
-        let mut header = self.header;
-        let body = self.body;
-        if !body.is_empty() {
-            let mut signature = String::new();
-            for v in &body {
-                v.get_signature(&mut signature);
-            }
-            header.headers.insert(Header::Signature(signature));
+    pub fn split(mut self) -> (MessageHeader, Vec<Value>) {
+        let signature = self.get_signature();
+        if !signature.is_empty() {
+            self.header.headers.insert(Header::Signature(signature));
         }
-        (header, body)
+        (self.header, self.body)
     }
 }
