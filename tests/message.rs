@@ -1,5 +1,5 @@
 use bytes::{Bytes, BytesMut};
-use dbus_message_parser::{Decoder, Encoder, Message, Value};
+use dbus_message_parser::{Decoder, Encoder, Message, MessageType, Value};
 
 fn decode_encode(msg: &[u8]) {
     // Decode Bytes to Message
@@ -305,6 +305,67 @@ fn get_destination_none() {
         .method_return()
         .expect("Could not create method return message");
     assert_eq!(msg.get_destination(), None);
+}
+
+#[test]
+fn get_signature() {
+    let mut msg = Message::method_call(
+        "destination.address",
+        "/object/path",
+        "interface.name",
+        "MethodName",
+    );
+    msg.add_value(Value::Uint32(0));
+    assert_eq!(msg.get_signature(), "u");
+}
+
+#[test]
+fn get_body() {
+    let mut msg = Message::method_call(
+        "destination.address",
+        "/object/path",
+        "interface.name",
+        "MethodName",
+    );
+    msg.add_value(Value::Uint32(0));
+    assert_eq!(msg.get_body(), &[Value::Uint32(0)][..]);
+}
+
+#[test]
+fn get_type() {
+    let msg = Message::method_call(
+        "destination.address",
+        "/object/path",
+        "interface.name",
+        "MethodName",
+    );
+    assert_eq!(msg.get_type(), MessageType::MethodCall);
+}
+
+#[test]
+fn split() {
+    let mut msg = Message::method_call(
+        "destination.address",
+        "/object/path",
+        "interface.name",
+        "MethodName",
+    );
+    msg.add_value(Value::Uint32(0));
+    let (header, body) = msg.split();
+    assert_eq!(header.get_signature(), Some("u"));
+    assert_eq!(body, &[Value::Uint32(0)][..]);
+}
+
+#[test]
+fn has_signature() {
+    let msg = Message::method_call(
+        "destination.address",
+        "/object/path",
+        "interface.name",
+        "MethodName",
+    );
+    let (header, _) = msg.split();
+    assert!(!header.has_signature());
 }
 
 #[test]
