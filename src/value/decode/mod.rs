@@ -1,7 +1,5 @@
 mod basic_type;
 mod container;
-#[cfg(test)]
-mod tests;
 mod value;
 
 use crate::{DecodeResult, Decoder, Value};

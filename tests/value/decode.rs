@@ -1,6 +1,5 @@
 use bytes::Bytes;
-
-use crate::{DecodeError, Decoder, Value};
+use dbus_message_parser::{DecodeError, Decoder, Value};
 
 macro_rules! init_test {
     ($array:tt, $le:expr, $sig:expr) => {{

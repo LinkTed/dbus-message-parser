@@ -1,5 +1,5 @@
-use crate::{EncodeError, Encoder, Value};
 use bytes::BytesMut;
+use dbus_message_parser::{EncodeError, Encoder, Value};
 
 macro_rules! init_test {
     ($array:tt, $value:expr, $le:expr) => {{

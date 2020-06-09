@@ -1,7 +1,5 @@
 mod basic_type;
 mod container;
-#[cfg(test)]
-mod tests;
 
 use super::Value;
 use crate::{EncodeResult, Encoder};
