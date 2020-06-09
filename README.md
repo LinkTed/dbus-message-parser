@@ -1,6 +1,7 @@
 # dbus-message-parser
 A library to encode and decode [DBus message](https://dbus.freedesktop.org/doc/dbus-specification.html).
-[![Build Status](https://travis-ci.org/LinkTed/dbus-message-parser.svg?branch=master)](https://travis-ci.org/LinkTed/dbus-message-parser)
+[![Build status](https://travis-ci.org/LinkTed/dbus-message-parser.svg?branch=master)](https://travis-ci.org/LinkTed/dbus-message-parser)
+[![Code coverage](https://codecov.io/gh/LinkTed/dbus-message-parser/branch/master/graph/badge.svg)](https://codecov.io/gh/LinkTed/dbus-message-parser)
 [![Latest version](https://img.shields.io/crates/v/dbus-message-parser.svg)](https://crates.io/crates/dbus-message-parser)
 [![License](https://img.shields.io/crates/l/dbus-message-parser.svg)](https://opensource.org/licenses/LGPL-3.0)
 
