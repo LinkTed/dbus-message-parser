@@ -140,6 +140,12 @@ fn get_signature() {
 }
 
 #[test]
+fn get_signature_empty() {
+    let msg = create_method_call();
+    assert_eq!(msg.get_signature(), "");
+}
+
+#[test]
 fn get_body() {
     let mut msg = create_method_call();
     msg.add_value(Value::Uint32(0));
