@@ -154,9 +154,9 @@ impl Message {
         self.header.unknown_interface()
     }
 
-    /// Create a unknown method error message from this `Message`.
-    pub fn unknown_method(&self) -> Result<Message, ()> {
-        self.header.unknown_method()
+    /// Create a unknown member error message from this `Message`.
+    pub fn unknown_member(&self) -> Result<Message, ()> {
+        self.header.unknown_member()
     }
 
     /// Create an invalid args error message from this `Message`.

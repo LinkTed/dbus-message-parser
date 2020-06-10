@@ -175,12 +175,12 @@ impl MessageHeader {
         }
     }
 
-    /// Create a unknown method error message from this `Message`.
-    pub fn unknown_method(&self) -> Result<Message, ()> {
+    /// Create a unknown member error message from this `Message`.
+    pub fn unknown_member(&self) -> Result<Message, ()> {
         if let Some(member) = self.get_member() {
             let message = format!("does not have a member {}", member);
             Ok(self.error(
-                "org.freedesktop.DBus.Error.UnknownMethod".to_string(),
+                "org.freedesktop.DBus.Error.UnknownMember".to_string(),
                 message,
             ))
         } else {
