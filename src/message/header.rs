@@ -150,41 +150,41 @@ impl MessageHeader {
     }
 
     /// Create a unknown path error message from this `Message`.
-    pub fn unknown_path(&self) -> Result<Message, ()> {
+    pub fn unknown_path(&self) -> Option<Message> {
         if let Some(path) = self.get_path() {
             let message = format!("does not have a path {}", path);
-            Ok(self.error(
+            Some(self.error(
                 "org.freedesktop.DBus.Error.UnknownPath".to_string(),
                 message,
             ))
         } else {
-            Err(())
+            None
         }
     }
 
     /// Create a unknown interface error message from this `Message`.
-    pub fn unknown_interface(&self) -> Result<Message, ()> {
+    pub fn unknown_interface(&self) -> Option<Message> {
         if let Some(interface) = self.get_interface() {
             let message = format!("does not have an interface {}", interface);
-            Ok(self.error(
+            Some(self.error(
                 "org.freedesktop.DBus.Error.UnknownInterface".to_string(),
                 message,
             ))
         } else {
-            Err(())
+            None
         }
     }
 
     /// Create a unknown member error message from this `Message`.
-    pub fn unknown_member(&self) -> Result<Message, ()> {
+    pub fn unknown_member(&self) -> Option<Message> {
         if let Some(member) = self.get_member() {
             let message = format!("does not have a member {}", member);
-            Ok(self.error(
+            Some(self.error(
                 "org.freedesktop.DBus.Error.UnknownMember".to_string(),
                 message,
             ))
         } else {
-            Err(())
+            None
         }
     }
 

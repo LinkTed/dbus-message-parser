@@ -145,17 +145,17 @@ impl Message {
     }
 
     /// Create a unknown path error message from this `Message`.
-    pub fn unknown_path(&self) -> Result<Message, ()> {
+    pub fn unknown_path(&self) -> Option<Message> {
         self.header.unknown_path()
     }
 
     /// Create a unknown interface error message from this `Message`.
-    pub fn unknown_interface(&self) -> Result<Message, ()> {
+    pub fn unknown_interface(&self) -> Option<Message> {
         self.header.unknown_interface()
     }
 
     /// Create a unknown member error message from this `Message`.
-    pub fn unknown_member(&self) -> Result<Message, ()> {
+    pub fn unknown_member(&self) -> Option<Message> {
         self.header.unknown_member()
     }
 
