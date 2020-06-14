@@ -14,7 +14,7 @@ fn decode_encode(msg: &[u8]) {
     #[cfg(target_family = "unix")]
     let mut encoder = Encoder::new(&mut bytes, &mut fds);
     #[cfg(not(target_family = "unix"))]
-    let mut encoder = Encoder::new(&mut encoder);
+    let mut encoder = Encoder::new(&mut bytes);
     encoder.message(&msg).unwrap();
 }
 
