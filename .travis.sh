@@ -1,14 +1,10 @@
 #!/bin/bash -e
 
 
-if [ "$TRAVIS_RUST_VERSION" = "nightly" ]
+if [ "$TRAVIS_OS_NAME" = "linux" ]
 then
-  if [ "$TRAVIS_OS_NAME" = "linux" ]
+  if [ "$TRAVIS_RUST_VERSION" = "nightly" ]
   then
-    # Download rustfmt
-    rustup component add rustfmt
-    # check fmt
-    cargo fmt -- --check
     # Download and unpack grcov
     curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
     # Set environment variables
@@ -25,6 +21,10 @@ then
     # Upload code coverage
     bash <(curl -s https://codecov.io/bash) -f lcov.info
   else
+    # Download rustfmt
+    rustup component add rustfmt
+    # check fmt
+    cargo fmt -- --check
     cargo test --verbose --all
   fi
 else
