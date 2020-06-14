@@ -9,8 +9,12 @@ fn decode_encode(msg: &[u8]) {
 
     // Encode Message to BytesMut
     let mut bytes = BytesMut::new();
+    #[cfg(target_family = "unix")]
     let mut fds = Vec::new();
+    #[cfg(target_family = "unix")]
     let mut encoder = Encoder::new(&mut bytes, &mut fds);
+    #[cfg(not(target_family = "unix"))]
+    let mut encoder = Encoder::new(&mut encoder);
     encoder.message(&msg).unwrap();
 }
 

@@ -7,7 +7,10 @@ impl<'a> Encoder<'a> {
         let is_le = message.header.is_le;
         // Encode the body in another buffer
         let mut buf_body = BytesMut::with_capacity(1024);
+        #[cfg(target_family = "unix")]
         let mut encoder = Encoder::new(&mut buf_body, self.fds);
+        #[cfg(not(target_family = "unix"))]
+        let mut encoder = Encoder::new(&mut buf_body);
         let mut body_signature = String::new();
         for v in &message.body {
             v.get_signature(&mut body_signature);

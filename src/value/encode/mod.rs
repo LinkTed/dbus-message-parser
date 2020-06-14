@@ -75,6 +75,7 @@ impl<'a> Encoder<'a> {
                 self.dict_entry(b, is_le)
             }
             Value::Variant(vec) => self.variant(vec, is_le),
+            #[cfg(target_family = "unix")]
             Value::UnixFD(fd) => {
                 self.algin(4);
                 self.unix_fd(*fd, is_le);

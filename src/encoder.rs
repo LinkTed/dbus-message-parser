@@ -1,4 +1,5 @@
 use bytes::{BufMut, BytesMut};
+#[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
 pub struct Encoder<'a> {

@@ -76,6 +76,7 @@ where
         self.offset
     }
 
+    #[cfg(target_family = "unix")]
     pub fn get_offset_fds(&self) -> usize {
         self.offset_fds
     }

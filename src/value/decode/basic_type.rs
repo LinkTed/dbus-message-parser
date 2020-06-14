@@ -1,5 +1,6 @@
 use crate::{DecodeError, DecodeResult, Decoder, Value, OBJECT_PATH_REGEX};
 use bytes::Buf;
+#[cfg(target_family = "unix")]
 use std::cmp::max;
 use std::mem::size_of;
 use std::ops::Deref;

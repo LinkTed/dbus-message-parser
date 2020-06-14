@@ -65,6 +65,7 @@ impl Value {
                 s.push('}');
             }
             Value::Variant(_) => s.push('v'),
+            #[cfg(target_family = "unix")]
             Value::UnixFD(_) => s.push('h'),
         }
     }

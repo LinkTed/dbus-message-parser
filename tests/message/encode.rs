@@ -13,8 +13,12 @@ fn method_call() {
     msg.add_value(Value::Uint32(0));
 
     let mut buffer = BytesMut::new();
+    #[cfg(target_family = "unix")]
     let mut fds = Vec::new();
+    #[cfg(target_family = "unix")]
     let mut encoder = Encoder::new(&mut buffer, &mut fds);
+    #[cfg(not(target_family = "unix"))]
+    let mut encoder = Encoder::new(&mut buffer);
     encoder.message(&msg).expect("Try to encode message");
     assert_eq!(
         &buffer,
@@ -35,8 +39,12 @@ fn signal() {
     signal.add_value(Value::Double(1.0));
 
     let mut buffer = BytesMut::new();
+    #[cfg(target_family = "unix")]
     let mut fds = Vec::new();
+    #[cfg(target_family = "unix")]
     let mut encoder = Encoder::new(&mut buffer, &mut fds);
+    #[cfg(not(target_family = "unix"))]
+    let mut encoder = Encoder::new(&mut buffer);
     encoder.message(&signal).expect("Try to encode message");
     assert_eq!(
         &buffer,

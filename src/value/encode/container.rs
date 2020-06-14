@@ -5,7 +5,10 @@ impl<'a> Encoder<'a> {
     /// Encode a `&Vec<Value>` as an array into the buffer.
     pub fn array(&mut self, vec: &Vec<Value>, sig: &str, is_le: bool) -> EncodeResult {
         let mut array_buf = BytesMut::with_capacity(128);
+        #[cfg(target_family = "unix")]
         let mut encoder = Encoder::new(&mut array_buf, self.fds);
+        #[cfg(not(target_family = "unix"))]
+        let mut encoder = Encoder::new(&mut array_buf);
         let mut sig_cmp = String::new();
         for v in vec {
             v.get_signature(&mut sig_cmp);
@@ -27,6 +30,8 @@ impl<'a> Encoder<'a> {
             Some(s) => match s {
                 "v" | "y" | "g" => {}
                 "n" | "q" => self.algin(2),
+                #[cfg(target_family = "unix")]
+                "h" => self.algin(4),
                 "b" | "i" | "u" | "a" | "s" | "o" => self.algin(4),
                 "x" | "t" | "d" | "(" | "{" => self.algin(8),
                 signature => return Err(EncodeError::UnknownSignature(signature.to_string())),

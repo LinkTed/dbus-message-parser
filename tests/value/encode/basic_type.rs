@@ -4,8 +4,12 @@ use dbus_message_parser::{EncodeError, Encoder, Value};
 macro_rules! init_test {
     ($array:tt, $value:expr, $le:expr) => {{
         let mut b = BytesMut::from(&$array[..]);
+        #[cfg(target_family = "unix")]
         let mut fds = Vec::new();
+        #[cfg(target_family = "unix")]
         let mut encoder = Encoder::new(&mut b, &mut fds);
+        #[cfg(not(target_family = "unix"))]
+        let mut encoder = Encoder::new(&mut b);
         let v = $value;
         encoder.value(&v, $le).unwrap();
         b
@@ -15,8 +19,12 @@ macro_rules! init_test {
 macro_rules! init_error_test {
     ($array:tt, $value:expr, $le:expr) => {{
         let mut b = BytesMut::from(&$array[..]);
+        #[cfg(target_family = "unix")]
         let mut fds = Vec::new();
+        #[cfg(target_family = "unix")]
         let mut encoder = Encoder::new(&mut b, &mut fds);
+        #[cfg(not(target_family = "unix"))]
+        let mut encoder = Encoder::new(&mut b);
         let v = $value;
         encoder.value(&v, $le)
     }};
@@ -259,6 +267,7 @@ fn signature_error() {
     }
 }
 
+#[cfg(target_family = "unix")]
 #[test]
 fn unix_fd_1() {
     let mut b = BytesMut::from(&b""[..]);
@@ -270,6 +279,7 @@ fn unix_fd_1() {
     assert_eq!(&fds[..], &[1,][..]);
 }
 
+#[cfg(target_family = "unix")]
 #[test]
 fn unix_fd_2() {
     let mut b = BytesMut::from(&b""[..]);
@@ -282,6 +292,7 @@ fn unix_fd_2() {
     assert_eq!(&fds[..], &[1,][..]);
 }
 
+#[cfg(target_family = "unix")]
 #[test]
 fn unix_fd_3() {
     let mut b = BytesMut::from(&b""[..]);
