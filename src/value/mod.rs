@@ -2,6 +2,7 @@ mod decode;
 mod encode;
 
 use crate::Header;
+#[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
 /// An enum representing a [DBus value].
@@ -25,6 +26,7 @@ pub enum Value {
     Struct(Vec<Value>),
     DictEntry(Box<(Value, Value)>),
     Variant(Vec<Value>),
+    #[cfg(target_family = "unix")]
     UnixFD(RawFd),
 }
 

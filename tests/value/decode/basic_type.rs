@@ -116,6 +116,7 @@ fn uint_16_3() {
     assert_eq!(v, Value::Uint16(61441));
 }
 
+#[cfg(target_family = "unix")]
 #[test]
 fn unix_fd() {
     let b = Bytes::from_static(&b"\x00\x00\x00\x00"[..]);
@@ -127,6 +128,7 @@ fn unix_fd() {
     assert_eq!(v, Value::UnixFD(2));
 }
 
+#[cfg(target_family = "unix")]
 #[test]
 fn unix_fd_error() {
     let b = Bytes::from_static(&b"\x01\x00\x00\x00"[..]);

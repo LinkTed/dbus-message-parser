@@ -14,8 +14,11 @@ fn get_next_signature<'a>(
 
         match signature.get(*signature_offset..end) {
             Some(s) => match s {
-                "y" | "b" | "n" | "q" | "i" | "u" | "x" | "t" | "d" | "s" | "o" | "g" | "v"
-                | "h" => {
+                "y" | "b" | "n" | "q" | "i" | "u" | "x" | "t" | "d" | "s" | "o" | "g" | "v" => {
+                    return Ok(&signature[start..end]);
+                }
+                #[cfg(target_family = "unix")]
+                "h" => {
                     return Ok(&signature[start..end]);
                 }
                 "a" => {}
@@ -145,6 +148,7 @@ where
                     self.path(is_le)?
                 }
                 "g" => self.signature()?,
+                #[cfg(target_family = "unix")]
                 "h" => {
                     self.algin(4)?;
                     self.unix_fd(is_le)?

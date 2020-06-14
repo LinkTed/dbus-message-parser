@@ -2,6 +2,7 @@ use crate::{EncodeError, EncodeResult, Encoder, OBJECT_PATH_REGEX};
 use bytes::BufMut;
 use std::convert::TryFrom;
 use std::mem::size_of;
+#[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
 impl<'a> Encoder<'a> {
@@ -61,6 +62,7 @@ impl<'a> Encoder<'a> {
         }
     }
 
+    #[cfg(target_family = "unix")]
     pub fn unix_fd(&mut self, fd: RawFd, is_len: bool) {
         let i = if let Some(i) = self.fds.iter().position(|i| *i == fd) {
             i

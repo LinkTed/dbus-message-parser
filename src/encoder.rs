@@ -3,6 +3,7 @@ use std::os::unix::io::RawFd;
 
 pub struct Encoder<'a> {
     pub(crate) buf: &'a mut BytesMut,
+    #[cfg(target_family = "unix")]
     pub(crate) fds: &'a mut Vec<RawFd>,
 }
 
@@ -21,7 +22,13 @@ impl<'a> Encoder<'a> {
         }
     }
 
+    #[cfg(target_family = "unix")]
     pub fn new(buf: &'a mut BytesMut, fds: &'a mut Vec<RawFd>) -> Encoder<'a> {
         Encoder { buf, fds }
+    }
+
+    #[cfg(not(target_family = "unix"))]
+    pub fn new(buf: &'a mut BytesMut) -> Encoder<'a> {
+        Encoder { buf }
     }
 }

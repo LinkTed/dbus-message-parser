@@ -1,6 +1,7 @@
 use crate::{DecodeError, DecodeResult};
 use bytes::Buf;
 use std::ops::Deref;
+#[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
 pub struct Decoder<'a, T>
@@ -9,7 +10,9 @@ where
 {
     pub(crate) buf: &'a T,
     pub(crate) offset: usize,
+    #[cfg(target_family = "unix")]
     pub(crate) fds: &'a [RawFd],
+    #[cfg(target_family = "unix")]
     pub(crate) offset_fds: usize,
 }
 
@@ -36,7 +39,9 @@ where
         Decoder {
             buf,
             offset: 0,
+            #[cfg(target_family = "unix")]
             fds: &[],
+            #[cfg(target_family = "unix")]
             offset_fds: 0,
         }
     }
@@ -45,11 +50,14 @@ where
         Decoder {
             buf,
             offset,
+            #[cfg(target_family = "unix")]
             fds: &[],
+            #[cfg(target_family = "unix")]
             offset_fds: 0,
         }
     }
 
+    #[cfg(target_family = "unix")]
     pub fn with_fds(
         buf: &'a T,
         offset: usize,

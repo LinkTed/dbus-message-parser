@@ -125,6 +125,7 @@ where
     }
 
     /// Decode from a byte array at a specific offset to a `Value::UnixFD`.
+    #[cfg(target_family = "unix")]
     pub fn unix_fd(&mut self, is_le: bool) -> DecodeResult<Value> {
         let i = self.u_32(is_le)? as usize;
         if let Some(fd) = self.fds.get(i) {
