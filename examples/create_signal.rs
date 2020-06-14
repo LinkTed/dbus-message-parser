@@ -17,8 +17,12 @@ fn main() {
     println!("{:?}", signal);
 
     let mut buffer = BytesMut::new();
+    #[cfg(target_family = "unix")]
     let mut fds = Vec::new();
+    #[cfg(target_family = "unix")]
     let mut encoder = Encoder::new(&mut buffer, &mut fds);
+    #[cfg(not(target_family = "unix"))]
+    let mut encoder = Encoder::new(&mut buffer);
     encoder.message(&signal).unwrap();
 
     println!("{:?}", buffer);
