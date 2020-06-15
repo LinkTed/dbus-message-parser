@@ -9,6 +9,13 @@ fn create_method_call() -> Message {
     )
 }
 
+fn check_error_msg(msg: Message, error_name: &str, error_message: &str) {
+    let (header, body) = msg.split();
+    assert_eq!(header.get_error_name().unwrap(), error_name);
+    assert_eq!(body.len(), 1);
+    assert_eq!(body[0], Value::String(error_message.to_string()));
+}
+
 #[test]
 fn get_serial() {
     let mut msg = create_method_call();
@@ -172,4 +179,67 @@ fn has_signature() {
     let msg = create_method_call();
     let (header, _) = msg.split();
     assert!(!header.has_signature());
+}
+
+#[test]
+fn unknown_path() {
+    let msg = create_method_call();
+    let msg = msg.unknown_path().unwrap();
+    check_error_msg(
+        msg,
+        "org.freedesktop.DBus.Error.UnknownPath",
+        "does not have a path /object/path",
+    );
+}
+
+#[test]
+fn unknown_path_none() {
+    let msg = create_method_call();
+    let msg = msg.error(
+        "org.example.error".to_string(),
+        "Example error message".to_string(),
+    );
+    assert!(msg.unknown_path().is_none());
+}
+
+#[test]
+fn unknown_interface() {
+    let msg = create_method_call();
+    let msg = msg.unknown_interface().unwrap();
+    check_error_msg(
+        msg,
+        "org.freedesktop.DBus.Error.UnknownInterface",
+        "does not have an interface interface.name",
+    );
+}
+
+#[test]
+fn unknown_interface_none() {
+    let msg = create_method_call();
+    let msg = msg.error(
+        "org.example.error".to_string(),
+        "Example error message".to_string(),
+    );
+    assert!(msg.unknown_interface().is_none());
+}
+
+#[test]
+fn unknown_member() {
+    let msg = create_method_call();
+    let msg = msg.unknown_member().unwrap();
+    check_error_msg(
+        msg,
+        "org.freedesktop.DBus.Error.UnknownMember",
+        "does not have a member MethodName",
+    );
+}
+
+#[test]
+fn unknown_member_none() {
+    let msg = create_method_call();
+    let msg = msg.error(
+        "org.example.error".to_string(),
+        "Example error message".to_string(),
+    );
+    assert!(msg.unknown_member().is_none());
 }
