@@ -1,5 +1,4 @@
-use crate::{DecodeError, Value, OBJECT_PATH_REGEX};
-use regex::Regex;
+use crate::{DecodeError, Value, BUS_NAMES, INTERFACE_REGEX, MEMBER_REGEX, OBJECT_PATH_REGEX};
 use std::convert::TryFrom;
 
 /// An enum representing a [header field].
@@ -38,13 +37,6 @@ impl TryFrom<Value> for Header {
                 };
                 // Check if the first is a byte
                 if let Value::Byte(b) = values.pop().unwrap() {
-                    lazy_static! {
-                        /// The regular expression for a valid [bus name].
-                        ///
-                        /// [bus name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
-                        static ref BUS_NAMES: Regex = Regex::new("^:?[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+$").unwrap();
-                    }
-
                     match b {
                         1 => {
                             // The header field is a Path.
@@ -61,14 +53,6 @@ impl TryFrom<Value> for Header {
                         2 => {
                             // The header field is an Interface.
                             if let Value::String(s) = v {
-                                lazy_static! {
-                                    /// The regular expression for a valid
-                                    /// [interface name].
-                                    ///
-                                    /// [bus name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
-                                    static ref INTERFACE_REGEX: Regex = Regex::new("^[A-Za-z0-9_]+(.[A-Za-z0-9_]+)+$").unwrap();
-                                }
-
                                 if INTERFACE_REGEX.is_match(&s) {
                                     Ok(Header::Interface(s))
                                 } else {
@@ -81,14 +65,6 @@ impl TryFrom<Value> for Header {
                         3 => {
                             // The header field is an Member.
                             if let Value::String(s) = v {
-                                lazy_static! {
-                                    /// The regular expression for a valid
-                                    /// [member name].
-                                    ///
-                                    /// [member name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
-                                    static ref MEMBER_REGEX: Regex = Regex::new("^[A-Za-z_][A-Za-z0-9_]*$").unwrap();
-                                }
-
                                 if MEMBER_REGEX.is_match(&s) {
                                     Ok(Header::Member(s))
                                 } else {
