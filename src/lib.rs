@@ -11,7 +11,7 @@ lazy_static! {
     /// The regular expression for a valid [object path].
     ///
     /// [object path]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
-    static ref OBJECT_PATH_REGEX: Regex = Regex::new("/([A-Za-z0-9_]+(/[A-Za-z0-9_]+)*)?").unwrap();
+    static ref OBJECT_PATH_REGEX: Regex = Regex::new(r"^/([A-Za-z0-9_]+(/[A-Za-z0-9_]+)*)?$").unwrap();
 }
 
 mod decoder;

@@ -42,7 +42,7 @@ impl TryFrom<Value> for Header {
                         /// The regular expression for a valid [bus name].
                         ///
                         /// [bus name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
-                        static ref BUS_NAMES: Regex = Regex::new(":?[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+").unwrap();
+                        static ref BUS_NAMES: Regex = Regex::new("^:?[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+$").unwrap();
                     }
 
                     match b {
@@ -66,7 +66,7 @@ impl TryFrom<Value> for Header {
                                     /// [interface name].
                                     ///
                                     /// [bus name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
-                                    static ref INTERFACE_REGEX: Regex = Regex::new("[A-Za-z0-9_]+(.[A-Za-z0-9_]+)+").unwrap();
+                                    static ref INTERFACE_REGEX: Regex = Regex::new("^[A-Za-z0-9_]+(.[A-Za-z0-9_]+)+$").unwrap();
                                 }
 
                                 if INTERFACE_REGEX.is_match(&s) {
@@ -79,14 +79,14 @@ impl TryFrom<Value> for Header {
                             }
                         }
                         3 => {
-                            // The header field is an Interface.
+                            // The header field is an Member.
                             if let Value::String(s) = v {
                                 lazy_static! {
                                     /// The regular expression for a valid
                                     /// [member name].
                                     ///
                                     /// [member name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
-                                    static ref MEMBER_REGEX: Regex = Regex::new("[A-Za-z_][A-Za-z0-9_]*").unwrap();
+                                    static ref MEMBER_REGEX: Regex = Regex::new("^[A-Za-z_][A-Za-z0-9_]*$").unwrap();
                                 }
 
                                 if MEMBER_REGEX.is_match(&s) {
