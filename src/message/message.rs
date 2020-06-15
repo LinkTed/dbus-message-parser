@@ -59,6 +59,49 @@ impl Message {
         }
     }
 
+    /// Create a `Message` to retrieve property value.
+    pub fn property_get(destination: &str, path: &str, interface: &str, property: &str) -> Message {
+        let mut msg =
+            Message::method_call(destination, path, "org.freedesktop.DBus.Properties", "Get");
+
+        msg.add_value(Value::String(interface.to_string()));
+        msg.add_value(Value::String(property.to_string()));
+
+        msg
+    }
+
+    /// Create a `Message` to retrieve property value.
+    pub fn properties_get_all(destination: &str, path: &str, interface: &str) -> Message {
+        let mut msg = Message::method_call(
+            destination,
+            path,
+            "org.freedesktop.DBus.Properties",
+            "GetAll",
+        );
+
+        msg.add_value(Value::String(interface.to_string()));
+
+        msg
+    }
+
+    /// Create a `Message` to retrieve property value.
+    pub fn property_set(
+        destination: &str,
+        path: &str,
+        interface: &str,
+        property: &str,
+        value: Value,
+    ) -> Message {
+        let mut msg =
+            Message::method_call(destination, path, "org.freedesktop.DBus.Properties", "Set");
+
+        msg.add_value(Value::String(interface.to_string()));
+        msg.add_value(Value::String(property.to_string()));
+        msg.add_value(Value::Variant(vec![value]));
+
+        msg
+    }
+
     /// Get the serial number.
     pub fn get_serial(&self) -> u32 {
         self.header.get_serial()
@@ -179,7 +222,7 @@ impl Message {
 
     /// Get the message type.
     pub fn get_type(&self) -> MessageType {
-        self.header.message_type.clone()
+        self.header.get_type()
     }
 
     /// Split the `Message` object into the header and the body.

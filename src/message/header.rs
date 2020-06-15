@@ -226,4 +226,9 @@ impl MessageHeader {
             body: vec![Value::String(message)],
         }
     }
+
+    /// Get the message type.
+    pub fn get_type(&self) -> MessageType {
+        self.message_type.clone()
+    }
 }

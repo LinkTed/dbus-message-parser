@@ -243,3 +243,70 @@ fn unknown_member_none() {
     );
     assert!(msg.unknown_member().is_none());
 }
+
+#[test]
+fn property_get() {
+    let msg = Message::property_get(
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        "Interfaces",
+    );
+    let (header, body) = msg.split();
+    assert_eq!(header.get_type(), MessageType::MethodCall);
+    assert_eq!(header.get_destination().unwrap(), "org.freedesktop.DBus");
+    assert_eq!(header.get_path().unwrap(), "/org/freedesktop/DBus");
+    assert_eq!(
+        header.get_interface().unwrap(),
+        "org.freedesktop.DBus.Properties"
+    );
+    assert_eq!(header.get_member().unwrap(), "Get");
+    assert_eq!(body.len(), 2);
+    assert_eq!(body[0], Value::String("org.freedesktop.DBus".to_string()));
+    assert_eq!(body[1], Value::String("Interfaces".to_string()));
+}
+
+#[test]
+fn properties_get_all() {
+    let msg = Message::properties_get_all(
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+    );
+    let (header, body) = msg.split();
+    assert_eq!(header.get_type(), MessageType::MethodCall);
+    assert_eq!(header.get_destination().unwrap(), "org.freedesktop.DBus");
+    assert_eq!(header.get_path().unwrap(), "/org/freedesktop/DBus");
+    assert_eq!(
+        header.get_interface().unwrap(),
+        "org.freedesktop.DBus.Properties"
+    );
+    assert_eq!(header.get_member().unwrap(), "GetAll");
+    assert_eq!(body.len(), 1);
+    assert_eq!(body[0], Value::String("org.freedesktop.DBus".to_string()));
+}
+
+#[test]
+fn property_set() {
+    let value = Value::String("Example value".to_string());
+    let msg = Message::property_set(
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        "Interfaces",
+        value.clone(),
+    );
+    let (header, body) = msg.split();
+    assert_eq!(header.get_type(), MessageType::MethodCall);
+    assert_eq!(header.get_destination().unwrap(), "org.freedesktop.DBus");
+    assert_eq!(header.get_path().unwrap(), "/org/freedesktop/DBus");
+    assert_eq!(
+        header.get_interface().unwrap(),
+        "org.freedesktop.DBus.Properties"
+    );
+    assert_eq!(header.get_member().unwrap(), "Set");
+    assert_eq!(body.len(), 3);
+    assert_eq!(body[0], Value::String("org.freedesktop.DBus".to_string()));
+    assert_eq!(body[1], Value::String("Interfaces".to_string()));
+    assert_eq!(body[2], Value::Variant(vec![value]));
+}
