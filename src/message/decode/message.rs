@@ -1,10 +1,9 @@
 use crate::{DecodeError, DecodeResult, Decoder, Message};
-use bytes::Buf;
 use std::ops::Deref;
 
 impl<'a, T> Decoder<'a, T>
 where
-    T: Buf + Deref<Target = [u8]>,
+    T: Deref<Target = [u8]>,
 {
     /// Decode a byte array to a `Message` object.
     ///

@@ -1,5 +1,4 @@
 use crate::{DecodeError, DecodeResult, Decoder, Value};
-use bytes::Buf;
 use std::ops::Deref;
 
 /// Get the next signature from a `&str`.
@@ -77,7 +76,7 @@ fn get_next_signature<'a>(
 
 impl<'a, T> Decoder<'a, T>
 where
-    T: Buf + Deref<Target = [u8]>,
+    T: Deref<Target = [u8]>,
 {
     /// Decode a byte array to a `Value` object.
     pub(crate) fn v(

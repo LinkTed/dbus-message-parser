@@ -1,12 +1,11 @@
 use crate::{DecodeError, DecodeResult};
-use bytes::Buf;
 use std::ops::Deref;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
 pub struct Decoder<'a, T>
 where
-    T: Buf + Deref<Target = [u8]>,
+    T: Deref<Target = [u8]>,
 {
     pub(crate) buf: &'a T,
     pub(crate) offset: usize,
@@ -18,7 +17,7 @@ where
 
 impl<'a, T> Decoder<'a, T>
 where
-    T: Buf + Deref<Target = [u8]>,
+    T: Deref<Target = [u8]>,
 {
     /// This is a helper function to add the algin to the offset.
     pub(crate) fn algin(&mut self, a: usize) -> DecodeResult<()> {

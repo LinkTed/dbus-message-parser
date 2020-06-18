@@ -7,7 +7,7 @@ use std::ops::Deref;
 
 impl<'a, T> Decoder<'a, T>
 where
-    T: Buf + Deref<Target = [u8]>,
+    T: Deref<Target = [u8]>,
 {
     pub(crate) fn b(&mut self) -> DecodeResult<u8> {
         let start = self.offset;

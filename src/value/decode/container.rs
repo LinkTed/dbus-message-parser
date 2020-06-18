@@ -1,10 +1,9 @@
 use crate::{DecodeError, DecodeResult, Decoder, Value};
-use bytes::Buf;
 use std::ops::Deref;
 
 impl<'a, T> Decoder<'a, T>
 where
-    T: Buf + Deref<Target = [u8]>,
+    T: Deref<Target = [u8]>,
 {
     /// Decode from a byte array at a specific offset to a `Value::Variant`.
     pub fn variant(&mut self, is_le: bool) -> DecodeResult<Value> {
