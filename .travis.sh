@@ -10,7 +10,7 @@ then
     # Set environment variables
     export CARGO_INCREMENTAL=0
     export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 \
-    -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+    -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests"
     # Create code coverage (gcno and gcda files)
     cargo test --verbose --all
     # Pack the gcno and gcda files into a zip file
