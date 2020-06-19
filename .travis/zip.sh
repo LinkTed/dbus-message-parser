@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 prefix="target/debug/deps"
 executables=("$prefix/dbus_message_parser-*.gc*"
