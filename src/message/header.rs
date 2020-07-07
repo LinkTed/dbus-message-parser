@@ -18,7 +18,7 @@ macro_rules! get_header {
 /// This represents a DBus [message header].
 ///
 /// [message header]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MessageHeader {
     pub(super) is_le: bool,
     pub(super) message_type: MessageType,

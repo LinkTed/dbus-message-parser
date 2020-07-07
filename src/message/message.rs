@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 /// This represents a DBus [message].
 ///
 /// [message]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Message {
     pub(super) header: MessageHeader,
     pub(super) body: Vec<Value>,
