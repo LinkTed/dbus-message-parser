@@ -8,7 +8,7 @@ use std::os::unix::io::RawFd;
 /// An enum representing a [DBus value].
 ///
 /// [DBus value]: https://dbus.freedesktop.org/doc/dbus-specification.html#type-system
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialOrd, PartialEq)]
 pub enum Value {
     Byte(u8),
     Boolean(bool),

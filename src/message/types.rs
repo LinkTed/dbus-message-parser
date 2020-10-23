@@ -1,7 +1,7 @@
 /// An enum representing the [message type].
 ///
 /// [message type]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-types
-#[derive(Debug, PartialEq, Eq, Clone, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialOrd, PartialEq, Ord, Eq, Clone, FromPrimitive, ToPrimitive)]
 pub enum MessageType {
     MethodCall = 1,
     MethodReturn = 2,

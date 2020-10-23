@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 /// An enum representing a [header field].
 ///
 /// [header field]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-fields
-#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub enum Header {
     Path(String),
     Interface(String),
