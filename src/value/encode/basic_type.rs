@@ -62,6 +62,19 @@ impl<'a> Encoder<'a> {
         }
     }
 
+    pub(crate) fn set_uint_32(&mut self, u: u32, offset: usize, is_le: bool) {
+        let bytes = if is_le {
+            u.to_le_bytes()
+        } else {
+            u.to_be_bytes()
+        };
+
+        self.buf[offset] = bytes[0];
+        self.buf[offset + 1] = bytes[1];
+        self.buf[offset + 2] = bytes[2];
+        self.buf[offset + 3] = bytes[3];
+    }
+
     #[cfg(target_family = "unix")]
     pub fn unix_fd(&mut self, fd: RawFd, is_len: bool) {
         let i = if let Some(i) = self.fds.iter().position(|i| *i == fd) {

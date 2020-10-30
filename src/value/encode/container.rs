@@ -1,30 +1,10 @@
 use crate::{EncodeError, EncodeResult, Encoder, Value};
-use bytes::BytesMut;
 
 impl<'a> Encoder<'a> {
     /// Encode a `&Vec<Value>` as an array into the buffer.
     pub fn array(&mut self, vec: &Vec<Value>, sig: &str, is_le: bool) -> EncodeResult {
-        let mut array_buf = BytesMut::with_capacity(128);
-        #[cfg(target_family = "unix")]
-        let mut encoder = Encoder::new(&mut array_buf, self.fds);
-        #[cfg(not(target_family = "unix"))]
-        let mut encoder = Encoder::new(&mut array_buf);
-        let mut sig_cmp = String::new();
-        for v in vec {
-            v.get_signature(&mut sig_cmp);
-            if sig == sig_cmp {
-                sig_cmp.clear();
-            } else {
-                return Err(EncodeError::ArraySignatureMismatch(
-                    sig.to_string(),
-                    sig_cmp,
-                ));
-            }
-            encoder.value(v, is_le)?;
-        }
-
-        let array_len = array_buf.len();
-        self.uint_32(array_len as u32, is_le);
+        let array_len_offset = self.buf.len();
+        self.uint_32(0, is_le);
 
         match sig.get(0..1) {
             Some(s) => match s {
@@ -39,8 +19,24 @@ impl<'a> Encoder<'a> {
             None => return Err(EncodeError::NullSignature),
         }
 
-        self.buf.reserve(array_len);
-        self.buf.extend(array_buf);
+        let array_len_offset_algin = self.buf.len();
+
+        let mut sig_cmp = String::new();
+        for v in vec {
+            v.get_signature(&mut sig_cmp);
+            if sig == sig_cmp {
+                sig_cmp.clear();
+            } else {
+                return Err(EncodeError::ArraySignatureMismatch(
+                    sig.to_string(),
+                    sig_cmp,
+                ));
+            }
+            self.value(v, is_le)?;
+        }
+
+        let array_len = (self.buf.len() - array_len_offset_algin) as u32;
+        self.set_uint_32(array_len, array_len_offset, is_le);
 
         Ok(())
     }
