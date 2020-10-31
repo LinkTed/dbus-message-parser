@@ -1,5 +1,6 @@
 use bytes::BytesMut;
 use dbus_message_parser::{EncodeError, Encoder, Value};
+use std::convert::TryInto;
 
 macro_rules! init_test {
     ($array:tt, $value:expr, $le:expr) => {{
@@ -221,29 +222,27 @@ fn string_3() {
 
 #[test]
 fn path_1() {
-    let b = init_test!(b"", Value::ObjectPath(String::from("/test")), true);
+    let b = init_test!(b"", Value::ObjectPath("/test".try_into().unwrap()), true);
     end_test!(b, b"\x05\x00\x00\x00\x2f\x74\x65\x73\x74\x00");
 }
 
 #[test]
 fn path_2() {
-    let b = init_test!(b"", Value::ObjectPath(String::from("/test")), false);
+    let b = init_test!(b"", Value::ObjectPath("/test".try_into().unwrap()), false);
     end_test!(b, b"\x00\x00\x00\x05\x2f\x74\x65\x73\x74\x00");
 }
 
 #[test]
 fn path_3() {
-    let b = init_test!(b"\x00", Value::ObjectPath(String::from("/test")), true);
+    let b = init_test!(
+        b"\x00",
+        Value::ObjectPath("/test".try_into().unwrap()),
+        true
+    );
     end_test!(
         b,
         b"\x00\x00\x00\x00\x05\x00\x00\x00\x2f\x74\x65\x73\x74\x00"
     );
-}
-
-#[test]
-fn path_error() {
-    let r = init_error_test!(b"", Value::ObjectPath(String::from("foo")), true);
-    assert_eq!(r, Err(EncodeError::ObjectPathInvalid(String::from("foo"))));
 }
 
 #[test]

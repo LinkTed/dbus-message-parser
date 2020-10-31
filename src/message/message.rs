@@ -1,7 +1,7 @@
 use super::flags::MessageFlags;
 use super::header::MessageHeader;
 use super::types::MessageType;
-use crate::{Header, Value};
+use crate::{Header, ObjectPath, Value};
 use std::collections::BTreeSet;
 
 /// This represents a DBus [message].
@@ -15,11 +15,16 @@ pub struct Message {
 
 impl Message {
     /// Create a `Message` object as a MethodCall.
-    pub fn method_call(destination: &str, path: &str, interface: &str, member: &str) -> Message {
+    pub fn method_call(
+        destination: &str,
+        object_path: ObjectPath,
+        interface: &str,
+        member: &str,
+    ) -> Message {
         let mut headers = BTreeSet::new();
 
         headers.insert(Header::Destination(destination.to_string()));
-        headers.insert(Header::Path(path.to_string()));
+        headers.insert(Header::Path(object_path));
         headers.insert(Header::Interface(interface.to_string()));
         headers.insert(Header::Member(member.to_string()));
 
@@ -38,10 +43,10 @@ impl Message {
     }
 
     /// Create a `Message` object as a Signal.
-    pub fn signal(path: &str, interface: &str, member: &str) -> Message {
+    pub fn signal(object_path: ObjectPath, interface: &str, member: &str) -> Message {
         let mut headers = BTreeSet::new();
 
-        headers.insert(Header::Path(path.to_string()));
+        headers.insert(Header::Path(object_path));
         headers.insert(Header::Interface(interface.to_string()));
         headers.insert(Header::Member(member.to_string()));
 
@@ -60,9 +65,18 @@ impl Message {
     }
 
     /// Create a `Message` to retrieve property value.
-    pub fn property_get(destination: &str, path: &str, interface: &str, property: &str) -> Message {
-        let mut msg =
-            Message::method_call(destination, path, "org.freedesktop.DBus.Properties", "Get");
+    pub fn property_get(
+        destination: &str,
+        object_path: ObjectPath,
+        interface: &str,
+        property: &str,
+    ) -> Message {
+        let mut msg = Message::method_call(
+            destination,
+            object_path,
+            "org.freedesktop.DBus.Properties",
+            "Get",
+        );
 
         msg.add_value(Value::String(interface.to_string()));
         msg.add_value(Value::String(property.to_string()));
@@ -71,10 +85,14 @@ impl Message {
     }
 
     /// Create a `Message` to retrieve property value.
-    pub fn properties_get_all(destination: &str, path: &str, interface: &str) -> Message {
+    pub fn properties_get_all(
+        destination: &str,
+        object_path: ObjectPath,
+        interface: &str,
+    ) -> Message {
         let mut msg = Message::method_call(
             destination,
-            path,
+            object_path,
             "org.freedesktop.DBus.Properties",
             "GetAll",
         );
@@ -87,13 +105,17 @@ impl Message {
     /// Create a `Message` to retrieve property value.
     pub fn property_set(
         destination: &str,
-        path: &str,
+        object_path: ObjectPath,
         interface: &str,
         property: &str,
         value: Value,
     ) -> Message {
-        let mut msg =
-            Message::method_call(destination, path, "org.freedesktop.DBus.Properties", "Set");
+        let mut msg = Message::method_call(
+            destination,
+            object_path,
+            "org.freedesktop.DBus.Properties",
+            "Set",
+        );
 
         msg.add_value(Value::String(interface.to_string()));
         msg.add_value(Value::String(property.to_string()));

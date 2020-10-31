@@ -8,11 +8,6 @@ extern crate bitflags;
 use regex::Regex;
 
 lazy_static! {
-    /// The regular expression for a valid [object path].
-    ///
-    /// [object path]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
-    pub static ref OBJECT_PATH_REGEX: Regex = Regex::new(r"^/([A-Za-z0-9_]+(/[A-Za-z0-9_]+)*)?$").unwrap();
-
     /// The regular expression for a valid [interface name].
     ///
     /// [interface name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
@@ -41,4 +36,4 @@ pub use encoder::Encoder;
 pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
 pub use header::Header;
 pub use message::{Message, MessageFlags, MessageHeader, MessageType};
-pub use value::Value;
+pub use value::{ObjectPath, ObjectPathError, Value, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};

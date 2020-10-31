@@ -17,6 +17,7 @@ The following examples show how to create a `METHOD_CALL` message and a `SIGNAL`
 ```rust
 use bytes::{Bytes, BytesMut};
 use dbus_message_parser::{Decoder, Encoder, Message, Value};
+use std::convert::TryInto;
 
 fn create_method_call() {
     // Create a MessageCall
@@ -27,7 +28,7 @@ fn create_method_call() {
     // 4. method
     let mut msg = Message::method_call(
         "destination.address",
-        "/object/path",
+        "/object/path".try_into().unwrap(),
         "interface.name",
         "MethodName",
     );
@@ -53,7 +54,11 @@ fn create_signal() {
     // 1. object path
     // 2. interface
     // 3. Signal name
-    let mut signal = Message::signal("/object/path", "interface.name", "SignalName");
+    let mut signal = Message::signal(
+        "/object/path".try_into().unwrap(),
+        "interface.name",
+        "SignalName",
+    );
 
     // Add the first argument to the MessageCall
     signal.add_value(Value::Uint32(0));

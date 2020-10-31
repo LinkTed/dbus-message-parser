@@ -1,7 +1,9 @@
 mod decode;
 mod encode;
+mod object_path;
 
 use crate::Header;
+pub use object_path::{ObjectPath, ObjectPathError, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
@@ -20,7 +22,7 @@ pub enum Value {
     Uint64(u64),
     Double(f64),
     String(String),
-    ObjectPath(String),
+    ObjectPath(ObjectPath),
     Signature(String),
     Array(Vec<Value>, String),
     Struct(Vec<Value>),

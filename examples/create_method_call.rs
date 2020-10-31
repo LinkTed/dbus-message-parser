@@ -1,5 +1,6 @@
 use bytes::BytesMut;
 use dbus_message_parser::{Encoder, Message, Value};
+use std::convert::TryInto;
 
 fn main() {
     // Create a MessageCall
@@ -10,7 +11,7 @@ fn main() {
     // 4. method
     let mut msg = Message::method_call(
         "destination.address",
-        "/object/path",
+        "/object/path".try_into().unwrap(),
         "interface.name",
         "MethodName",
     );

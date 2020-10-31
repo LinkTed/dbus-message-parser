@@ -54,7 +54,7 @@ impl<'a> Encoder<'a> {
             }
             Value::ObjectPath(s) => {
                 self.algin(4);
-                self.path(s, is_le)
+                self.object_path(s, is_le)
             }
             Value::String(s) => {
                 self.algin(4);

@@ -1,7 +1,8 @@
-use crate::{DecodeError, DecodeResult, Decoder, Value, OBJECT_PATH_REGEX};
+use crate::{DecodeError, DecodeResult, Decoder, ObjectPath, Value};
 use bytes::Buf;
 #[cfg(target_family = "unix")]
 use std::cmp::max;
+use std::convert::TryFrom;
 use std::mem::size_of;
 use std::ops::Deref;
 
@@ -218,14 +219,10 @@ where
     }
 
     /// Decode from a byte array at a specific offset to a `Value::ObjectPath`.
-    pub fn path(&mut self, is_le: bool) -> DecodeResult<Value> {
+    pub fn object_path(&mut self, is_le: bool) -> DecodeResult<Value> {
         let s = self.str(is_le)?;
-
-        if OBJECT_PATH_REGEX.is_match(&s) {
-            Ok(Value::ObjectPath(s))
-        } else {
-            Err(DecodeError::ObjectPathRegex)
-        }
+        let o = ObjectPath::try_from(s)?;
+        Ok(Value::ObjectPath(o))
     }
 
     /// Decode from a byte array at a specific offset to a `String`.

@@ -144,7 +144,7 @@ where
                 }
                 "o" => {
                     self.algin(4)?;
-                    self.path(is_le)?
+                    self.object_path(is_le)?
                 }
                 "g" => self.signature()?,
                 #[cfg(target_family = "unix")]

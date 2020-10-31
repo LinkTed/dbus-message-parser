@@ -1,5 +1,6 @@
 use bytes::Bytes;
 use dbus_message_parser::{DecodeError, Decoder, Value};
+use std::convert::TryInto;
 
 macro_rules! init_test {
     ($array:tt, $le:expr, $sig:expr) => {{
@@ -323,13 +324,13 @@ fn string_error_3() {
 #[test]
 fn path_1() {
     let v = init_test!(b"\x05\x00\x00\x00\x2f\x74\x65\x73\x74\x00", true, "o");
-    assert_eq!(v, Value::ObjectPath(String::from("/test")));
+    assert_eq!(v, Value::ObjectPath("/test".try_into().unwrap()));
 }
 
 #[test]
 fn path_2() {
     let v = init_test!(b"\x00\x00\x00\x05\x2f\x74\x65\x73\x74\x00", false, "o");
-    assert_eq!(v, Value::ObjectPath(String::from("/test")));
+    assert_eq!(v, Value::ObjectPath("/test".try_into().unwrap()));
 }
 
 #[test]
@@ -340,13 +341,7 @@ fn path_3() {
         true,
         "o"
     );
-    assert_eq!(v, Value::ObjectPath(String::from("/test")));
-}
-
-#[test]
-fn path_error() {
-    let v = init_error_test!(b"\x03\x00\x00\x00\x66\x6f\x6f\x00", "o");
-    assert_eq!(v, Err(DecodeError::ObjectPathRegex));
+    assert_eq!(v, Value::ObjectPath("/test".try_into().unwrap()));
 }
 
 #[test]

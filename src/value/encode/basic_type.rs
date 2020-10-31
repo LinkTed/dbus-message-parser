@@ -1,4 +1,4 @@
-use crate::{EncodeError, EncodeResult, Encoder, OBJECT_PATH_REGEX};
+use crate::{EncodeResult, Encoder, ObjectPath};
 use bytes::BufMut;
 use std::convert::TryFrom;
 use std::mem::size_of;
@@ -125,12 +125,8 @@ impl<'a> Encoder<'a> {
         self.buf.put_u8(0);
     }
 
-    pub fn path(&mut self, s: &str, is_le: bool) -> EncodeResult {
-        if !OBJECT_PATH_REGEX.is_match(s) {
-            return Err(EncodeError::ObjectPathInvalid(s.to_string()));
-        }
-
-        self.string(s, is_le);
+    pub fn object_path(&mut self, o: &ObjectPath, is_le: bool) -> EncodeResult {
+        self.string(o, is_le);
         Ok(())
     }
 

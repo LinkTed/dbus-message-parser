@@ -1,5 +1,5 @@
 use dbus_message_parser::{DecodeError, Header, Value};
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 #[test]
 fn error_1() {
@@ -35,26 +35,19 @@ fn error_5() {
 
 #[test]
 fn path() {
-    let variant = Value::Variant(Box::new(Value::ObjectPath("/object/path".to_string())));
+    let variant = Value::Variant(Box::new(Value::ObjectPath("/object/path".try_into().unwrap())));
     let value = Value::Struct(vec![Value::Byte(1), variant]);
     assert_eq!(
         Header::try_from(value),
-        Ok(Header::Path("/object/path".to_string()))
+        Ok(Header::Path("/object/path".try_into().unwrap()))
     );
 }
 
 #[test]
-fn path_error_1() {
-    let variant = Value::Variant(Box::new(Value::String("object/path".to_string())));
+fn path_error() {
+    let variant = Value::Variant(Box::new(Value::String("/object/path".to_string())));
     let value = Value::Struct(vec![Value::Byte(1), variant]);
     assert_eq!(Header::try_from(value), Err(DecodeError::Header));
-}
-
-#[test]
-fn path_error_2() {
-    let variant = Value::Variant(Box::new(Value::ObjectPath("object/path".to_string())));
-    let value = Value::Struct(vec![Value::Byte(1), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::ObjectPathRegex));
 }
 
 #[test]

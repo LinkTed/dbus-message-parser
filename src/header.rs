@@ -1,4 +1,4 @@
-use crate::{DecodeError, Value, BUS_NAMES, INTERFACE_REGEX, MEMBER_REGEX, OBJECT_PATH_REGEX};
+use crate::{DecodeError, ObjectPath, Value, BUS_NAMES, INTERFACE_REGEX, MEMBER_REGEX};
 use std::convert::TryFrom;
 
 /// An enum representing a [header field].
@@ -6,7 +6,7 @@ use std::convert::TryFrom;
 /// [header field]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-fields
 #[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub enum Header {
-    Path(String),
+    Path(ObjectPath),
     Interface(String),
     Member(String),
     ErrorName(String),
@@ -35,12 +35,8 @@ impl TryFrom<Value> for Header {
                     match b {
                         1 => {
                             // The header field is a Path.
-                            if let Value::ObjectPath(s) = v {
-                                if OBJECT_PATH_REGEX.is_match(&s) {
-                                    Ok(Header::Path(s))
-                                } else {
-                                    Err(DecodeError::ObjectPathRegex)
-                                }
+                            if let Value::ObjectPath(o) = v {
+                                Ok(Header::Path(o))
                             } else {
                                 Err(DecodeError::Header)
                             }

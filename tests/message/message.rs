@@ -1,9 +1,10 @@
 use dbus_message_parser::{Message, MessageType, Value};
+use std::convert::TryInto;
 
 fn create_method_call() -> Message {
     Message::method_call(
         "destination.address",
-        "/object/path",
+        "/object/path".try_into().unwrap(),
         "interface.name",
         "MethodName",
     )
@@ -248,7 +249,7 @@ fn unknown_member_none() {
 fn property_get() {
     let msg = Message::property_get(
         "org.freedesktop.DBus",
-        "/org/freedesktop/DBus",
+        "/org/freedesktop/DBus".try_into().unwrap(),
         "org.freedesktop.DBus",
         "Interfaces",
     );
@@ -270,7 +271,7 @@ fn property_get() {
 fn properties_get_all() {
     let msg = Message::properties_get_all(
         "org.freedesktop.DBus",
-        "/org/freedesktop/DBus",
+        "/org/freedesktop/DBus".try_into().unwrap(),
         "org.freedesktop.DBus",
     );
     let (header, body) = msg.split();
@@ -291,7 +292,7 @@ fn property_set() {
     let value = Value::String("Example value".to_string());
     let msg = Message::property_set(
         "org.freedesktop.DBus",
-        "/org/freedesktop/DBus",
+        "/org/freedesktop/DBus".try_into().unwrap(),
         "org.freedesktop.DBus",
         "Interfaces",
         value.clone(),
