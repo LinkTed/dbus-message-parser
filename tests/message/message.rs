@@ -308,5 +308,5 @@ fn property_set() {
     assert_eq!(body.len(), 3);
     assert_eq!(body[0], Value::String("org.freedesktop.DBus".to_string()));
     assert_eq!(body[1], Value::String("Interfaces".to_string()));
-    assert_eq!(body[2], Value::Variant(vec![value]));
+    assert_eq!(body[2], Value::Variant(Box::new(value)));
 }

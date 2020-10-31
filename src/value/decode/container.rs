@@ -8,8 +8,13 @@ where
     /// Decode from a byte array at a specific offset to a `Value::Variant`.
     pub fn variant(&mut self, is_le: bool) -> DecodeResult<Value> {
         let signature = self.sig()?;
-        let v = self.value(is_le, &signature)?;
-        Ok(Value::Variant(v))
+        let mut v = self.value(is_le, &signature)?;
+        if v.len() == 1 {
+            let v = v.pop().unwrap();
+            Ok(Value::Variant(Box::new(v)))
+        } else {
+            Err(DecodeError::VariantError(v))
+        }
     }
 
     /// Decode from a byte array at a specific offset to a `Value::Array`.

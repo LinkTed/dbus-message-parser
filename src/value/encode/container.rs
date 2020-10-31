@@ -58,18 +58,12 @@ impl<'a> Encoder<'a> {
     }
 
     /// Encode a `&[Value]` as a variant into the buffer.
-    pub fn variant(&mut self, values: &[Value], is_le: bool) -> EncodeResult {
+    pub fn variant(&mut self, variant: &Box<Value>, is_le: bool) -> EncodeResult {
         let mut sig = String::new();
-
-        for v in values {
-            v.get_signature(&mut sig);
-        }
-
+        variant.get_signature(&mut sig);
         self.signature(&sig)?;
 
-        for v in values {
-            self.value(v, is_le)?;
-        }
+        self.value(variant, is_le)?;
 
         Ok(())
     }

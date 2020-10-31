@@ -25,13 +25,8 @@ impl TryFrom<Value> for Header {
             // The length of the struct have to be 2
             if values.len() == 2 {
                 // Check if the second is a Variant and unwrap the value.
-                let v = if let Value::Variant(mut v) = values.pop().unwrap() {
-                    // The Variant should only contain one element.
-                    if v.len() != 1 {
-                        return Err(DecodeError::Header);
-                    }
-
-                    v.pop().unwrap()
+                let v: Value = if let Value::Variant(v) = values.pop().unwrap() {
+                    *v
                 } else {
                     return Err(DecodeError::Header);
                 };

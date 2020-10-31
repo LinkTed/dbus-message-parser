@@ -25,7 +25,7 @@ pub enum Value {
     Array(Vec<Value>, String),
     Struct(Vec<Value>),
     DictEntry(Box<(Value, Value)>),
-    Variant(Vec<Value>),
+    Variant(Box<Value>),
     #[cfg(target_family = "unix")]
     UnixFD(RawFd),
 }
@@ -84,6 +84,6 @@ impl From<Header> for Value {
             Header::Signature(s) => (Value::Byte(8), Value::Signature(s)),
         };
 
-        Value::Struct(vec![b, Value::Variant(vec![v])])
+        Value::Struct(vec![b, Value::Variant(Box::new(v))])
     }
 }

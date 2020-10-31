@@ -26,17 +26,9 @@ fn encode_decode(value_1: &Value, is_le: bool) {
 
 #[test]
 fn array() {
-    let empty_variant = Value::Variant(Vec::new());
-    let non_empty_variant = Value::Variant(vec![Value::Array(Vec::new(), "{s(bgav)}".to_string())]);
-    let array = Value::Array(
-        vec![
-            empty_variant.clone(),
-            non_empty_variant.clone(),
-            empty_variant.clone(),
-            empty_variant.clone(),
-        ],
-        "v".to_string(),
-    );
+    let non_empty_variant =
+        Value::Variant(Box::new(Value::Array(Vec::new(), "{s(bgav)}".to_string())));
+    let array = Value::Array(vec![non_empty_variant.clone()], "v".to_string());
 
     encode_decode(&array, true);
     encode_decode(&array, false);

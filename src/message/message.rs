@@ -97,7 +97,7 @@ impl Message {
 
         msg.add_value(Value::String(interface.to_string()));
         msg.add_value(Value::String(property.to_string()));
-        msg.add_value(Value::Variant(vec![value]));
+        msg.add_value(Value::Variant(Box::new(value)));
 
         msg
     }

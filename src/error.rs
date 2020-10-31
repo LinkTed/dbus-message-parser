@@ -1,3 +1,4 @@
+use crate::Value;
 use std::num::TryFromIntError;
 use std::string::FromUtf8Error;
 
@@ -25,6 +26,7 @@ pub type DecodeResult<T> = Result<T, DecodeError>;
 #[derive(Debug, PartialEq)]
 pub enum DecodeError {
     TooShort,
+    VariantError(Vec<Value>),
     InvalidBoolean(u32),
     Utf8Error(FromUtf8Error),
     StringNotNull,
