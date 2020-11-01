@@ -14,6 +14,8 @@ pub enum Header {
     Destination(Bus),
     Sender(Bus),
     Signature(String),
+    #[cfg(target_family = "unix")]
+    UnixFDs(u32),
 }
 
 impl TryFrom<Value> for Header {
@@ -93,6 +95,15 @@ impl TryFrom<Value> for Header {
                             // The header field is a Signature.
                             if let Value::Signature(s) = v {
                                 Ok(Header::Signature(s))
+                            } else {
+                                Err(DecodeError::Header)
+                            }
+                        }
+                        #[cfg(target_family = "unix")]
+                        9 => {
+                            // The header field is a UnixFds.
+                            if let Value::Uint32(u) = v {
+                                Ok(Header::UnixFDs(u))
                             } else {
                                 Err(DecodeError::Header)
                             }

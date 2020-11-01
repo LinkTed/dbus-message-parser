@@ -194,6 +194,16 @@ impl Message {
         signature
     }
 
+    /// Get the `UnixFDs`, if there is one in the header field.
+    pub fn get_unix_fds(&self) -> Option<u32> {
+        self.header.get_unix_fds()
+    }
+
+    /// It is true if the message contains an `UnixFDs` in the header fields.
+    pub fn has_unix_fds(&self) -> bool {
+        self.header.has_unix_fds()
+    }
+
     /// Add a new value to the body.
     pub fn add_value(&mut self, value: Value) {
         self.body.push(value);

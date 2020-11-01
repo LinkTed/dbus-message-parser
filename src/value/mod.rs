@@ -92,6 +92,8 @@ impl From<Header> for Value {
             Header::Destination(s) => (Value::Byte(6), Value::String(s.into())),
             Header::Sender(s) => (Value::Byte(7), Value::String(s.into())),
             Header::Signature(s) => (Value::Byte(8), Value::Signature(s)),
+            #[cfg(target_family = "unix")]
+            Header::UnixFDs(u) => (Value::Byte(9), Value::Uint32(u)),
         };
 
         Value::Struct(vec![b, Value::Variant(Box::new(v))])

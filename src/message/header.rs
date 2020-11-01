@@ -100,6 +100,22 @@ impl MessageHeader {
         self.get_signature().is_some()
     }
 
+    /// Get the `UnixFDs`, if there is one in the header field.
+    pub fn get_unix_fds(&self) -> Option<u32> {
+        for h in &self.headers {
+            if let Header::UnixFDs(fds) = h {
+                return Some(*fds);
+            }
+        }
+
+        None
+    }
+
+    /// It is true if the message contains an `UnixFDs` in the header fields.
+    pub fn has_unix_fds(&self) -> bool {
+        self.get_unix_fds().is_some()
+    }
+
     /// Create a message return from this `Message`.
     /// Only works if this `Message` is a MethodCall.
     pub fn method_return(&self) -> Result<Message, Message> {
