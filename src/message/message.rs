@@ -1,7 +1,7 @@
 use super::flags::MessageFlags;
 use super::header::MessageHeader;
 use super::types::MessageType;
-use crate::{Header, Interface, Member, ObjectPath, Value};
+use crate::{Bus, Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
@@ -17,14 +17,14 @@ pub struct Message {
 impl Message {
     /// Create a `Message` object as a MethodCall.
     pub fn method_call(
-        destination: &str,
+        destination: Bus,
         object_path: ObjectPath,
         interface: Interface,
         member: Member,
     ) -> Message {
         let mut headers = BTreeSet::new();
 
-        headers.insert(Header::Destination(destination.to_string()));
+        headers.insert(Header::Destination(destination));
         headers.insert(Header::Path(object_path));
         headers.insert(Header::Interface(interface));
         headers.insert(Header::Member(member));
@@ -67,7 +67,7 @@ impl Message {
 
     /// Create a `Message` to retrieve property value.
     pub fn property_get(
-        destination: &str,
+        destination: Bus,
         object_path: ObjectPath,
         interface: &str,
         property: &str,
@@ -87,7 +87,7 @@ impl Message {
 
     /// Create a `Message` to retrieve property value.
     pub fn properties_get_all(
-        destination: &str,
+        destination: Bus,
         object_path: ObjectPath,
         interface: &str,
     ) -> Message {
@@ -105,7 +105,7 @@ impl Message {
 
     /// Create a `Message` to retrieve property value.
     pub fn property_set(
-        destination: &str,
+        destination: Bus,
         object_path: ObjectPath,
         interface: &str,
         property: &str,
@@ -176,12 +176,12 @@ impl Message {
     }
 
     /// Get the `Sender`, if there is one in the header field.
-    pub fn get_sender(&self) -> Option<&str> {
+    pub fn get_sender(&self) -> Option<&Bus> {
         self.header.get_sender()
     }
 
     /// Get the `Destination`, if there is one in the header field.
-    pub fn get_destination(&self) -> Option<&str> {
+    pub fn get_destination(&self) -> Option<&Bus> {
         self.header.get_destination()
     }
 

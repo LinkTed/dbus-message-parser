@@ -1,4 +1,4 @@
-use crate::{DecodeError, Interface, Member, ObjectPath, Value, BUS_NAMES};
+use crate::{Bus, DecodeError, Interface, Member, ObjectPath, Value};
 use std::convert::TryFrom;
 
 /// An enum representing a [header field].
@@ -11,8 +11,8 @@ pub enum Header {
     Member(Member),
     ErrorName(String),
     ReplySerial(u32),
-    Destination(String),
-    Sender(String),
+    Destination(Bus),
+    Sender(Bus),
     Signature(String),
 }
 
@@ -76,11 +76,7 @@ impl TryFrom<Value> for Header {
                         6 => {
                             // The header field is a Destination.
                             if let Value::String(s) = v {
-                                if BUS_NAMES.is_match(&s) {
-                                    Ok(Header::Destination(s))
-                                } else {
-                                    Err(DecodeError::BusNamesRegex)
-                                }
+                                Ok(Header::Destination(Bus::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -88,11 +84,7 @@ impl TryFrom<Value> for Header {
                         7 => {
                             // The header field is a Sender.
                             if let Value::String(s) = v {
-                                if BUS_NAMES.is_match(&s) {
-                                    Ok(Header::Sender(s))
-                                } else {
-                                    Err(DecodeError::BusNamesRegex)
-                                }
+                                Ok(Header::Sender(Bus::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }

@@ -1,6 +1,6 @@
 use super::message::Message;
 use super::{MessageFlags, MessageType};
-use crate::{Header, Interface, Member, ObjectPath, Value};
+use crate::{Bus, Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 
 macro_rules! get_header {
@@ -65,12 +65,12 @@ impl MessageHeader {
     }
 
     /// Get the `Destination`, if there is one in the header field.
-    pub fn get_destination(&self) -> Option<&str> {
+    pub fn get_destination(&self) -> Option<&Bus> {
         get_header!(self, Destination);
     }
 
     /// Get the `Sender`, if there is one in the header field.
-    pub fn get_sender(&self) -> Option<&str> {
+    pub fn get_sender(&self) -> Option<&Bus> {
         get_header!(self, Sender);
     }
 
@@ -111,11 +111,11 @@ impl MessageHeader {
             let mut headers = BTreeSet::<Header>::new();
 
             if let Some(sender) = self.get_sender() {
-                headers.insert(Header::Destination(sender.to_string()));
+                headers.insert(Header::Destination(sender.clone()));
             }
 
             if let Some(destination) = self.get_destination() {
-                headers.insert(Header::Sender(destination.to_string()));
+                headers.insert(Header::Sender(destination.clone()));
             }
 
             headers.insert(Header::ReplySerial(self.get_serial()));
@@ -204,11 +204,11 @@ impl MessageHeader {
 
         let mut headers = BTreeSet::<Header>::new();
         if let Some(sender) = self.get_sender() {
-            headers.insert(Header::Destination(sender.to_string()));
+            headers.insert(Header::Destination(sender.clone()));
         }
 
         if let Some(destination) = self.get_destination() {
-            headers.insert(Header::Sender(destination.to_string()));
+            headers.insert(Header::Sender(destination.clone()));
         }
         headers.insert(Header::ReplySerial(self.get_serial()));
         headers.insert(Header::ErrorName(name));

@@ -5,7 +5,7 @@ use std::convert::TryInto;
 #[test]
 fn method_call() {
     let mut msg = Message::method_call(
-        "destination.address",
+        "destination.address".try_into().unwrap(),
         "/object/path".try_into().unwrap(),
         "interface.name".try_into().unwrap(),
         "MethodName".try_into().unwrap(),

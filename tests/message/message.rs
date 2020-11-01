@@ -3,7 +3,7 @@ use std::convert::TryInto;
 
 fn create_method_call() -> Message {
     Message::method_call(
-        "destination.address",
+        "destination.address".try_into().unwrap(),
         "/object/path".try_into().unwrap(),
         "interface.name".try_into().unwrap(),
         "MethodName".try_into().unwrap(),
@@ -116,7 +116,7 @@ fn get_sender() {
     let msg = msg
         .method_return()
         .expect("Could not create method return message");
-    assert_eq!(msg.get_sender(), Some("destination.address"));
+    assert_eq!(msg.get_sender().unwrap(), "destination.address");
 }
 
 #[test]
@@ -128,7 +128,7 @@ fn get_sender_none() {
 #[test]
 fn get_destination() {
     let msg = create_method_call();
-    assert_eq!(msg.get_destination(), Some("destination.address"));
+    assert_eq!(msg.get_destination().unwrap(), "destination.address");
 }
 
 #[test]
@@ -248,7 +248,7 @@ fn unknown_member_none() {
 #[test]
 fn property_get() {
     let msg = Message::property_get(
-        "org.freedesktop.DBus",
+        "org.freedesktop.DBus".try_into().unwrap(),
         "/org/freedesktop/DBus".try_into().unwrap(),
         "org.freedesktop.DBus",
         "Interfaces",
@@ -270,7 +270,7 @@ fn property_get() {
 #[test]
 fn properties_get_all() {
     let msg = Message::properties_get_all(
-        "org.freedesktop.DBus",
+        "org.freedesktop.DBus".try_into().unwrap(),
         "/org/freedesktop/DBus".try_into().unwrap(),
         "org.freedesktop.DBus",
     );
@@ -291,7 +291,7 @@ fn properties_get_all() {
 fn property_set() {
     let value = Value::String("Example value".to_string());
     let msg = Message::property_set(
-        "org.freedesktop.DBus",
+        "org.freedesktop.DBus".try_into().unwrap(),
         "/org/freedesktop/DBus".try_into().unwrap(),
         "org.freedesktop.DBus",
         "Interfaces",

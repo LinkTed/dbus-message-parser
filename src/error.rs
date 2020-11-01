@@ -1,4 +1,4 @@
-use crate::{InterfaceError, MemberError, ObjectPathError, Value};
+use crate::{BusError, InterfaceError, MemberError, ObjectPathError, Value};
 use std::num::TryFromIntError;
 use std::string::FromUtf8Error;
 
@@ -29,10 +29,10 @@ pub enum DecodeError {
     InvalidBoolean(u32),
     Utf8Error(FromUtf8Error),
     StringNotNull,
+    BusError(BusError),
     ObjectPathError(ObjectPathError),
     InterfaceError(InterfaceError),
     MemberError(MemberError),
-    BusNamesRegex,
     Signature,
     SignatureTooBig,
     Padding,
@@ -55,6 +55,12 @@ pub enum DecodeError {
 impl From<FromUtf8Error> for DecodeError {
     fn from(e: FromUtf8Error) -> Self {
         DecodeError::Utf8Error(e)
+    }
+}
+
+impl From<BusError> for DecodeError {
+    fn from(e: BusError) -> Self {
+        DecodeError::BusError(e)
     }
 }
 

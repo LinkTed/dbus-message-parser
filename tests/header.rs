@@ -1,4 +1,4 @@
-use dbus_message_parser::{DecodeError, Header, InterfaceError, MemberError, Value};
+use dbus_message_parser::{BusError, DecodeError, Header, InterfaceError, MemberError, Value};
 use std::convert::{TryFrom, TryInto};
 
 #[test]
@@ -166,14 +166,26 @@ fn reply_serial_error() {
 }
 
 #[test]
-fn destination() {
+fn destination_1() {
     let variant = Value::Variant(Box::new(Value::String(
         "org.example.destination".to_string(),
     )));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
         Header::try_from(value),
-        Ok(Header::Destination("org.example.destination".to_string()))
+        Ok(Header::Destination(
+            "org.example.destination".try_into().unwrap()
+        ))
+    );
+}
+
+#[test]
+fn destination_2() {
+    let variant = Value::Variant(Box::new(Value::String(":1.10".to_string())));
+    let value = Value::Struct(vec![Value::Byte(6), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Ok(Header::Destination(":1.10".try_into().unwrap()))
     );
 }
 
@@ -190,16 +202,41 @@ fn destination_error_2() {
         "/org.example.destination".to_string(),
     )));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::BusNamesRegex));
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::BusError(BusError::RegexError(
+            "/org.example.destination".to_string()
+        )))
+    );
 }
 
 #[test]
-fn sender() {
+fn destination_error_3() {
+    let variant = Value::Variant(Box::new(Value::String(String::new())));
+    let value = Value::Struct(vec![Value::Byte(6), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::BusError(BusError::LengthError(0)))
+    );
+}
+
+#[test]
+fn sender_1() {
     let variant = Value::Variant(Box::new(Value::String("org.example.sender".to_string())));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
         Header::try_from(value),
-        Ok(Header::Sender("org.example.sender".to_string()))
+        Ok(Header::Sender("org.example.sender".try_into().unwrap()))
+    );
+}
+
+#[test]
+fn sender_2() {
+    let variant = Value::Variant(Box::new(Value::String(":1.10".to_string())));
+    let value = Value::Struct(vec![Value::Byte(7), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Ok(Header::Sender(":1.10".try_into().unwrap()))
     );
 }
 
@@ -212,9 +249,26 @@ fn sender_error_1() {
 
 #[test]
 fn sender_error_2() {
-    let variant = Value::Variant(Box::new(Value::String("/org.example.sender".to_string())));
+    let variant = Value::Variant(Box::new(Value::String(
+        "/org.example.sender".try_into().unwrap(),
+    )));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::BusNamesRegex));
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::BusError(BusError::RegexError(
+            "/org.example.sender".to_string()
+        )))
+    );
+}
+
+#[test]
+fn sender_error_3() {
+    let variant = Value::Variant(Box::new(Value::String(String::new())));
+    let value = Value::Struct(vec![Value::Byte(7), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::BusError(BusError::LengthError(0)))
+    );
 }
 
 #[test]
