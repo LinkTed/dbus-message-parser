@@ -8,7 +8,7 @@ fn method_call() {
         "destination.address",
         "/object/path".try_into().unwrap(),
         "interface.name",
-        "MethodName",
+        "MethodName".try_into().unwrap(),
     );
     msg.add_value(Value::String("String Argument".to_string()));
     msg.add_value(Value::Uint32(0));
@@ -38,7 +38,7 @@ fn signal() {
     let mut signal = Message::signal(
         "/object/path".try_into().unwrap(),
         "interface.name",
-        "SignalName",
+        "SignalName".try_into().unwrap(),
     );
     signal.add_value(Value::Uint32(0));
     signal.add_value(Value::Double(1.0));

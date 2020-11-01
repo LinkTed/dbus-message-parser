@@ -1,6 +1,7 @@
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
-use std::convert::TryFrom;
+use std::convert::{From, TryFrom};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
 
 lazy_static! {
@@ -28,6 +29,12 @@ pub enum ObjectPathError {
     TryFromError(String),
 }
 
+impl From<ObjectPath> for String {
+    fn from(object_path: ObjectPath) -> Self {
+        object_path.0
+    }
+}
+
 impl TryFrom<String> for ObjectPath {
     type Error = ObjectPathError;
 
@@ -49,9 +56,9 @@ impl TryFrom<&str> for ObjectPath {
     }
 }
 
-impl ToString for ObjectPath {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for ObjectPath {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{}", self.0)
     }
 }
 

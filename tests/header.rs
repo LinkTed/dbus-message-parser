@@ -1,4 +1,4 @@
-use dbus_message_parser::{DecodeError, Header, Value};
+use dbus_message_parser::{DecodeError, Header, MemberError, Value};
 use std::convert::{TryFrom, TryInto};
 
 #[test]
@@ -35,7 +35,9 @@ fn error_5() {
 
 #[test]
 fn path() {
-    let variant = Value::Variant(Box::new(Value::ObjectPath("/object/path".try_into().unwrap())));
+    let variant = Value::Variant(Box::new(Value::ObjectPath(
+        "/object/path".try_into().unwrap(),
+    )));
     let value = Value::Struct(vec![Value::Byte(1), variant]);
     assert_eq!(
         Header::try_from(value),
@@ -82,7 +84,7 @@ fn member() {
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
         Header::try_from(value),
-        Ok(Header::Member("Get".to_string()))
+        Ok(Header::Member("Get".try_into().unwrap()))
     );
 }
 
@@ -97,7 +99,12 @@ fn member_error_1() {
 fn member_error_2() {
     let variant = Value::Variant(Box::new(Value::String("/Get".to_string())));
     let value = Value::Struct(vec![Value::Byte(3), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::MemberRegex));
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::MemberError(MemberError::TryFromError(
+            "/Get".to_string()
+        )))
+    );
 }
 
 #[test]

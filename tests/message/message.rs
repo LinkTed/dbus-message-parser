@@ -6,7 +6,7 @@ fn create_method_call() -> Message {
         "destination.address",
         "/object/path".try_into().unwrap(),
         "interface.name",
-        "MethodName",
+        "MethodName".try_into().unwrap(),
     )
 }
 
@@ -43,7 +43,7 @@ fn get_reply_serial_none() {
 #[test]
 fn get_path() {
     let msg = create_method_call();
-    assert_eq!(msg.get_path(), Some("/object/path"));
+    assert_eq!(msg.get_path().unwrap(), "/object/path");
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn has_member() {
 #[test]
 fn get_member() {
     let msg = create_method_call();
-    assert_eq!(msg.get_member(), Some("MethodName"));
+    assert_eq!(msg.get_member().unwrap(), "MethodName");
 }
 
 #[test]

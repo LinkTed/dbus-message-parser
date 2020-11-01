@@ -13,7 +13,7 @@ fn main() {
         "destination.address",
         "/object/path".try_into().unwrap(),
         "interface.name",
-        "MethodName",
+        "MethodName".try_into().unwrap(),
     );
 
     // Add the first argument to the MessageCall

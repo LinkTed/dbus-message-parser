@@ -11,7 +11,7 @@ fn main() {
     let mut signal = Message::signal(
         "/object/path".try_into().unwrap(),
         "interface.name",
-        "SignalName",
+        "SignalName".try_into().unwrap(),
     );
 
     // Add the first argument to the MessageCall

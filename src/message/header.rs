@@ -1,6 +1,6 @@
 use super::message::Message;
 use super::{MessageFlags, MessageType};
-use crate::{Header, Value};
+use crate::{Header, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 
 macro_rules! get_header {
@@ -30,7 +30,7 @@ pub struct MessageHeader {
 
 impl MessageHeader {
     /// Get the `Path`, if there is one in the header field.
-    pub fn get_path(&self) -> Option<&str> {
+    pub fn get_path(&self) -> Option<&ObjectPath> {
         get_header!(self, Path);
     }
 
@@ -45,7 +45,7 @@ impl MessageHeader {
     }
 
     ///headers Get the `Member`, if there is one in the header field.
-    pub fn get_member(&self) -> Option<&str> {
+    pub fn get_member(&self) -> Option<&Member> {
         get_header!(self, Member);
     }
 

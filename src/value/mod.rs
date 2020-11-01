@@ -1,8 +1,10 @@
 mod decode;
 mod encode;
+mod member;
 mod object_path;
 
 use crate::Header;
+pub use member::{Member, MemberError, MEMBER_REGEX};
 pub use object_path::{ObjectPath, ObjectPathError, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
@@ -78,7 +80,7 @@ impl From<Header> for Value {
         let (b, v) = match header {
             Header::Path(s) => (Value::Byte(1), Value::ObjectPath(s)),
             Header::Interface(s) => (Value::Byte(2), Value::String(s)),
-            Header::Member(s) => (Value::Byte(3), Value::String(s)),
+            Header::Member(s) => (Value::Byte(3), Value::String(s.into())),
             Header::ErrorName(s) => (Value::Byte(4), Value::String(s)),
             Header::ReplySerial(u) => (Value::Byte(5), Value::Uint32(u)),
             Header::Destination(s) => (Value::Byte(6), Value::String(s)),

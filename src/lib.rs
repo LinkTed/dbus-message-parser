@@ -13,11 +13,6 @@ lazy_static! {
     /// [interface name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
     pub static ref INTERFACE_REGEX: Regex = Regex::new("^[A-Za-z0-9_]+(.[A-Za-z0-9_]+)+$").unwrap();
 
-    /// The regular expression for a valid [member name].
-    ///
-    /// [member name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
-    pub static ref MEMBER_REGEX: Regex = Regex::new("^[A-Za-z_][A-Za-z0-9_]*$").unwrap();
-
     /// The regular expression for a valid [bus name].
     ///
     /// [bus name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
@@ -36,4 +31,7 @@ pub use encoder::Encoder;
 pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
 pub use header::Header;
 pub use message::{Message, MessageFlags, MessageHeader, MessageType};
-pub use value::{ObjectPath, ObjectPathError, Value, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};
+pub use value::{
+    Member, MemberError, ObjectPath, ObjectPathError, Value, MEMBER_REGEX,
+    OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX,
+};
