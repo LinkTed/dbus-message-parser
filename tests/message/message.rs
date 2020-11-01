@@ -5,7 +5,7 @@ fn create_method_call() -> Message {
     Message::method_call(
         "destination.address",
         "/object/path".try_into().unwrap(),
-        "interface.name",
+        "interface.name".try_into().unwrap(),
         "MethodName".try_into().unwrap(),
     )
 }
@@ -64,7 +64,7 @@ fn has_interface() {
 #[test]
 fn get_interface() {
     let msg = create_method_call();
-    assert_eq!(msg.get_interface(), Some("interface.name"));
+    assert_eq!(msg.get_interface().unwrap(), "interface.name");
 }
 
 #[test]

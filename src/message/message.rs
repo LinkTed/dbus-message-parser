@@ -1,7 +1,7 @@
 use super::flags::MessageFlags;
 use super::header::MessageHeader;
 use super::types::MessageType;
-use crate::{Header, Member, ObjectPath, Value};
+use crate::{Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
@@ -19,14 +19,14 @@ impl Message {
     pub fn method_call(
         destination: &str,
         object_path: ObjectPath,
-        interface: &str,
+        interface: Interface,
         member: Member,
     ) -> Message {
         let mut headers = BTreeSet::new();
 
         headers.insert(Header::Destination(destination.to_string()));
         headers.insert(Header::Path(object_path));
-        headers.insert(Header::Interface(interface.to_string()));
+        headers.insert(Header::Interface(interface));
         headers.insert(Header::Member(member));
 
         let header = MessageHeader {
@@ -44,11 +44,11 @@ impl Message {
     }
 
     /// Create a `Message` object as a Signal.
-    pub fn signal(object_path: ObjectPath, interface: &str, member: Member) -> Message {
+    pub fn signal(object_path: ObjectPath, interface: Interface, member: Member) -> Message {
         let mut headers = BTreeSet::new();
 
         headers.insert(Header::Path(object_path));
-        headers.insert(Header::Interface(interface.to_string()));
+        headers.insert(Header::Interface(interface));
         headers.insert(Header::Member(member));
 
         let header = MessageHeader {
@@ -75,7 +75,7 @@ impl Message {
         let mut msg = Message::method_call(
             destination,
             object_path,
-            "org.freedesktop.DBus.Properties",
+            "org.freedesktop.DBus.Properties".try_into().unwrap(),
             "Get".try_into().unwrap(),
         );
 
@@ -94,7 +94,7 @@ impl Message {
         let mut msg = Message::method_call(
             destination,
             object_path,
-            "org.freedesktop.DBus.Properties",
+            "org.freedesktop.DBus.Properties".try_into().unwrap(),
             "GetAll".try_into().unwrap(),
         );
 
@@ -114,7 +114,7 @@ impl Message {
         let mut msg = Message::method_call(
             destination,
             object_path,
-            "org.freedesktop.DBus.Properties",
+            "org.freedesktop.DBus.Properties".try_into().unwrap(),
             "Set".try_into().unwrap(),
         );
 
@@ -150,8 +150,8 @@ impl Message {
         self.header.has_interface()
     }
 
-    /// Get the `Path`, if there is one in the header field.
-    pub fn get_interface(&self) -> Option<&str> {
+    /// Get the `Interface`, if there is one in the header fields.
+    pub fn get_interface(&self) -> Option<&Interface> {
         self.header.get_interface()
     }
 

@@ -12,7 +12,7 @@ fn main() {
     let mut msg = Message::method_call(
         "destination.address",
         "/object/path".try_into().unwrap(),
-        "interface.name",
+        "interface.name".try_into().unwrap(),
         "MethodName".try_into().unwrap(),
     );
 

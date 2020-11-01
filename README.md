@@ -29,7 +29,7 @@ fn create_method_call() {
     let mut msg = Message::method_call(
         "destination.address",
         "/object/path".try_into().unwrap(),
-        "interface.name",
+        "interface.name".try_into().unwrap(),
         "MethodName".try_into().unwrap(),
     );
 
@@ -56,7 +56,7 @@ fn create_signal() {
     // 3. Signal name
     let mut signal = Message::signal(
         "/object/path".try_into().unwrap(),
-        "interface.name",
+        "interface.name".try_into.unwrap(),
         "SignalName".try_into().unwrap(),
     );
 

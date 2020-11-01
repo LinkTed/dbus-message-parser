@@ -1,13 +1,17 @@
 mod decode;
 mod encode;
+mod interface;
 mod member;
 mod object_path;
 
 use crate::Header;
+pub use interface::{Interface, InterfaceError, INTERFACE_REGEX};
 pub use member::{Member, MemberError, MEMBER_REGEX};
 pub use object_path::{ObjectPath, ObjectPathError, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
+
+pub const MAXIMUM_NAME_LENGTH: usize = 255;
 
 /// An enum representing a [DBus value].
 ///
@@ -79,7 +83,7 @@ impl From<Header> for Value {
     fn from(header: Header) -> Self {
         let (b, v) = match header {
             Header::Path(s) => (Value::Byte(1), Value::ObjectPath(s)),
-            Header::Interface(s) => (Value::Byte(2), Value::String(s)),
+            Header::Interface(s) => (Value::Byte(2), Value::String(s.into())),
             Header::Member(s) => (Value::Byte(3), Value::String(s.into())),
             Header::ErrorName(s) => (Value::Byte(4), Value::String(s)),
             Header::ReplySerial(u) => (Value::Byte(5), Value::Uint32(u)),

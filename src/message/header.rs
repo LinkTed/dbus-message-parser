@@ -1,6 +1,6 @@
 use super::message::Message;
 use super::{MessageFlags, MessageType};
-use crate::{Header, Member, ObjectPath, Value};
+use crate::{Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 
 macro_rules! get_header {
@@ -35,7 +35,7 @@ impl MessageHeader {
     }
 
     /// Get the `Interface`, if there is one in the header field.
-    pub fn get_interface(&self) -> Option<&str> {
+    pub fn get_interface(&self) -> Option<&Interface> {
         get_header!(self, Interface);
     }
 

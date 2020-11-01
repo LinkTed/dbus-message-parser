@@ -1,4 +1,4 @@
-use dbus_message_parser::{DecodeError, Header, MemberError, Value};
+use dbus_message_parser::{DecodeError, Header, InterfaceError, MemberError, Value};
 use std::convert::{TryFrom, TryInto};
 
 #[test]
@@ -58,7 +58,9 @@ fn interface() {
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
         Header::try_from(value),
-        Ok(Header::Interface("org.example.interface".to_string()))
+        Ok(Header::Interface(
+            "org.example.interface".try_into().unwrap()
+        ))
     );
 }
 
@@ -75,7 +77,22 @@ fn interface_error_2() {
         "/org.example.interface".to_string(),
     )));
     let value = Value::Struct(vec![Value::Byte(2), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::InterfaceRegex));
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::InterfaceError(InterfaceError::RegexError(
+            "/org.example.interface".to_string()
+        )))
+    );
+}
+
+#[test]
+fn interface_error_3() {
+    let variant = Value::Variant(Box::new(Value::String(String::new())));
+    let value = Value::Struct(vec![Value::Byte(2), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::InterfaceError(InterfaceError::LengthError(0)))
+    );
 }
 
 #[test]
@@ -101,9 +118,19 @@ fn member_error_2() {
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
         Header::try_from(value),
-        Err(DecodeError::MemberError(MemberError::TryFromError(
+        Err(DecodeError::MemberError(MemberError::RegexError(
             "/Get".to_string()
         )))
+    );
+}
+
+#[test]
+fn member_error_3() {
+    let variant = Value::Variant(Box::new(Value::String(String::new())));
+    let value = Value::Struct(vec![Value::Byte(3), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::MemberError(MemberError::LengthError(0)))
     );
 }
 

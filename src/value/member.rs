@@ -1,3 +1,4 @@
+use crate::MAXIMUM_NAME_LENGTH;
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
@@ -5,23 +6,25 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
 
 lazy_static! {
-    /// The regular expression for a valid [member].
+    /// The regular expression for a valid [member name].
     ///
-    /// [member]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
-    pub static ref MEMBER_REGEX: Regex = Regex::new("^[A-Za-z_][A-Za-z0-9_]{0, 254}").unwrap();
+    /// [member name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
+    pub static ref MEMBER_REGEX: Regex = Regex::new("^[A-Za-z_][A-Za-z0-9_]*$").unwrap();
 }
 
-/// This represents a [member].
+/// This represents a [member name].
 ///
-/// [member]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
+/// [member name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
 #[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub struct Member(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`Member`].
 #[derive(Debug, PartialEq, Eq)]
 pub enum MemberError {
-    /// This error occurs, when the given string was not a valid object path.
-    TryFromError(String),
+    /// This error occurs, when the given string was not a valid member name.
+    RegexError(String),
+    /// This error occurs, when the given string has the wrong length.
+    LengthError(usize),
 }
 
 impl From<Member> for String {
@@ -34,10 +37,15 @@ impl TryFrom<String> for Member {
     type Error = MemberError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        if MEMBER_REGEX.is_match(&value) {
-            Ok(Member(value))
+        let value_len = value.len();
+        if 0 < value_len && value_len <= MAXIMUM_NAME_LENGTH {
+            if MEMBER_REGEX.is_match(&value) {
+                Ok(Member(value))
+            } else {
+                Err(MemberError::RegexError(value))
+            }
         } else {
-            Err(MemberError::TryFromError(value))
+            Err(MemberError::LengthError(value_len))
         }
     }
 }
@@ -62,12 +70,6 @@ impl Deref for Member {
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl Default for Member {
-    fn default() -> Self {
-        Member("/".to_string())
     }
 }
 

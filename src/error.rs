@@ -1,4 +1,4 @@
-use crate::{MemberError, ObjectPathError, Value};
+use crate::{InterfaceError, MemberError, ObjectPathError, Value};
 use std::num::TryFromIntError;
 use std::string::FromUtf8Error;
 
@@ -30,8 +30,8 @@ pub enum DecodeError {
     Utf8Error(FromUtf8Error),
     StringNotNull,
     ObjectPathError(ObjectPathError),
+    InterfaceError(InterfaceError),
     MemberError(MemberError),
-    InterfaceRegex,
     BusNamesRegex,
     Signature,
     SignatureTooBig,
@@ -61,6 +61,12 @@ impl From<FromUtf8Error> for DecodeError {
 impl From<ObjectPathError> for DecodeError {
     fn from(e: ObjectPathError) -> Self {
         DecodeError::ObjectPathError(e)
+    }
+}
+
+impl From<InterfaceError> for DecodeError {
+    fn from(e: InterfaceError) -> Self {
+        DecodeError::InterfaceError(e)
     }
 }
 

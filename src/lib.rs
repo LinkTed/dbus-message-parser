@@ -8,11 +8,6 @@ extern crate bitflags;
 use regex::Regex;
 
 lazy_static! {
-    /// The regular expression for a valid [interface name].
-    ///
-    /// [interface name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
-    pub static ref INTERFACE_REGEX: Regex = Regex::new("^[A-Za-z0-9_]+(.[A-Za-z0-9_]+)+$").unwrap();
-
     /// The regular expression for a valid [bus name].
     ///
     /// [bus name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
@@ -32,6 +27,7 @@ pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
 pub use header::Header;
 pub use message::{Message, MessageFlags, MessageHeader, MessageType};
 pub use value::{
-    Member, MemberError, ObjectPath, ObjectPathError, Value, MEMBER_REGEX,
-    OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX,
+    Interface, InterfaceError, Member, MemberError, ObjectPath, ObjectPathError, Value,
+    INTERFACE_REGEX, MAXIMUM_NAME_LENGTH, MEMBER_REGEX, OBJECT_PATH_ELEMENT_REGEX,
+    OBJECT_PATH_REGEX,
 };
