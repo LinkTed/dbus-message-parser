@@ -1,4 +1,4 @@
-use crate::{Interface, MAXIMUM_NAME_LENGTH};
+use crate::MAXIMUM_NAME_LENGTH;
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
