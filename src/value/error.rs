@@ -21,15 +21,15 @@ pub struct Error(String);
 /// An enum representing all errors, which can occur during the handling of a [`Error`].
 #[derive(Debug, PartialEq, Eq)]
 pub enum ErrorError {
-    /// This error occurs, when the given string was not a valid interface name.
+    /// This error occurs, when the given string was not a valid error name.
     RegexError(String),
     /// This error occurs, when the given string has the wrong length.
     LengthError(usize),
 }
 
 impl From<Error> for String {
-    fn from(interface: Error) -> Self {
-        interface.0
+    fn from(error: Error) -> Self {
+        error.0
     }
 }
 
