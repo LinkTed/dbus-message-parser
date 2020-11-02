@@ -201,6 +201,7 @@ impl Message {
     }
 
     /// It is true if the message contains an `UnixFDs` in the header fields.
+    #[cfg(target_family = "unix")]
     pub fn has_unix_fds(&self) -> bool {
         self.header.has_unix_fds()
     }
