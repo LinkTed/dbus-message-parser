@@ -2,7 +2,7 @@ use crate::{EncodeError, EncodeResult, Encoder, Value};
 
 impl<'a> Encoder<'a> {
     /// Encode a `&Vec<Value>` as an array into the buffer.
-    pub fn array(&mut self, vec: &Vec<Value>, sig: &str, is_le: bool) -> EncodeResult {
+    pub fn array(&mut self, vec: &[Value], sig: &str, is_le: bool) -> EncodeResult {
         let array_len_offset = self.buf.len();
         self.uint_32(0, is_le);
 
@@ -58,7 +58,7 @@ impl<'a> Encoder<'a> {
     }
 
     /// Encode a `&[Value]` as a variant into the buffer.
-    pub fn variant(&mut self, variant: &Box<Value>, is_le: bool) -> EncodeResult {
+    pub fn variant(&mut self, variant: &Value, is_le: bool) -> EncodeResult {
         let mut sig = String::new();
         variant.get_signature(&mut sig);
         self.signature(&sig)?;

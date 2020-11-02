@@ -35,7 +35,7 @@ impl<'a> Encoder<'a> {
         self.uint_32(message_header.serial, is_le);
 
         // Encode the header fields.
-        let headers = headers.into_iter().map(Value::from).collect();
+        let headers: Vec<Value> = headers.into_iter().map(Value::from).collect();
         self.array(&headers, "(yv)", is_le)?;
 
         Ok(())
