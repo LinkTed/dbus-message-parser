@@ -102,6 +102,7 @@ impl MessageHeader {
     }
 
     /// Get the `UnixFDs`, if there is one in the header field.
+    #[cfg(target_family = "unix")]
     pub fn get_unix_fds(&self) -> Option<u32> {
         for h in &self.headers {
             if let Header::UnixFDs(fds) = h {
@@ -113,6 +114,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `UnixFDs` in the header fields.
+    #[cfg(target_family = "unix")]
     pub fn has_unix_fds(&self) -> bool {
         self.get_unix_fds().is_some()
     }

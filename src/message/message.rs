@@ -195,6 +195,7 @@ impl Message {
     }
 
     /// Get the `UnixFDs`, if there is one in the header field.
+    #[cfg(target_family = "unix")]
     pub fn get_unix_fds(&self) -> Option<u32> {
         self.header.get_unix_fds()
     }
