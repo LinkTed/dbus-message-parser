@@ -106,8 +106,8 @@ fn has_error_name() {
 #[test]
 fn get_error_name() {
     let msg = create_method_call();
-    let msg = msg.error("name".to_string(), "message".to_string());
-    assert_eq!(msg.get_error_name(), Some("name"));
+    let msg = msg.error("error.name".try_into().unwrap(), "message".to_string());
+    assert_eq!(msg.get_error_name().unwrap(), "error.name");
 }
 
 #[test]
@@ -197,7 +197,7 @@ fn unknown_path() {
 fn unknown_path_none() {
     let msg = create_method_call();
     let msg = msg.error(
-        "org.example.error".to_string(),
+        "org.example.error".try_into().unwrap(),
         "Example error message".to_string(),
     );
     assert!(msg.unknown_path().is_none());
@@ -218,7 +218,7 @@ fn unknown_interface() {
 fn unknown_interface_none() {
     let msg = create_method_call();
     let msg = msg.error(
-        "org.example.error".to_string(),
+        "org.example.error".try_into().unwrap(),
         "Example error message".to_string(),
     );
     assert!(msg.unknown_interface().is_none());
@@ -239,7 +239,7 @@ fn unknown_member() {
 fn unknown_member_none() {
     let msg = create_method_call();
     let msg = msg.error(
-        "org.example.error".to_string(),
+        "org.example.error".try_into().unwrap(),
         "Example error message".to_string(),
     );
     assert!(msg.unknown_member().is_none());

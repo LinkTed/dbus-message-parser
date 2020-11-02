@@ -1,12 +1,14 @@
 mod bus;
 mod decode;
 mod encode;
+mod error;
 mod interface;
 mod member;
 mod object_path;
 
 use crate::Header;
 pub use bus::{Bus, BusError, BUS_REGEX};
+pub use error::{Error, ErrorError, ERROR_REGEX};
 pub use interface::{Interface, InterfaceError, INTERFACE_REGEX};
 pub use member::{Member, MemberError, MEMBER_REGEX};
 pub use object_path::{ObjectPath, ObjectPathError, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};
@@ -87,7 +89,7 @@ impl From<Header> for Value {
             Header::Path(s) => (Value::Byte(1), Value::ObjectPath(s)),
             Header::Interface(s) => (Value::Byte(2), Value::String(s.into())),
             Header::Member(s) => (Value::Byte(3), Value::String(s.into())),
-            Header::ErrorName(s) => (Value::Byte(4), Value::String(s)),
+            Header::ErrorName(s) => (Value::Byte(4), Value::String(s.into())),
             Header::ReplySerial(u) => (Value::Byte(5), Value::Uint32(u)),
             Header::Destination(s) => (Value::Byte(6), Value::String(s.into())),
             Header::Sender(s) => (Value::Byte(7), Value::String(s.into())),

@@ -1,7 +1,7 @@
 use super::flags::MessageFlags;
 use super::header::MessageHeader;
 use super::types::MessageType;
-use crate::{Bus, Header, Interface, Member, ObjectPath, Value};
+use crate::{Bus, Error, Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
@@ -171,7 +171,7 @@ impl Message {
     }
 
     /// Get the `ErrorName`, if there is one in the header field.
-    pub fn get_error_name(&self) -> Option<&str> {
+    pub fn get_error_name(&self) -> Option<&Error> {
         self.header.get_error_name()
     }
 
@@ -236,15 +236,12 @@ impl Message {
     }
 
     /// Create an invalid args error message from this `Message`.
-    pub fn invalid_args(&self, reason: &str) -> Message {
-        self.error(
-            "org.freedesktop.DBus.Error.InvalidArgs".to_string(),
-            reason.to_string(),
-        )
+    pub fn invalid_args(&self, reason: String) -> Message {
+        self.header.invalid_args(reason)
     }
 
     /// Create an error message from this `Message`.
-    pub fn error(&self, name: String, message: String) -> Message {
+    pub fn error(&self, name: Error, message: String) -> Message {
         self.header.error(name, message)
     }
 

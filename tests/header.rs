@@ -1,4 +1,6 @@
-use dbus_message_parser::{BusError, DecodeError, Header, InterfaceError, MemberError, Value};
+use dbus_message_parser::{
+    BusError, DecodeError, ErrorError, Header, InterfaceError, MemberError, Value,
+};
 use std::convert::{TryFrom, TryInto};
 
 #[test]
@@ -140,15 +142,37 @@ fn error_name() {
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
         Header::try_from(value),
-        Ok(Header::ErrorName("error.name".to_string()))
+        Ok(Header::ErrorName("error.name".try_into().unwrap()))
     );
 }
 
 #[test]
-fn error_name_error() {
+fn error_name_error_1() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+}
+
+#[test]
+fn error_name_error_2() {
+    let variant = Value::Variant(Box::new(Value::String("/error.name".to_string())));
+    let value = Value::Struct(vec![Value::Byte(4), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::ErrorError(ErrorError::RegexError(
+            "/error.name".to_string()
+        )))
+    );
+}
+
+#[test]
+fn error_name_error_3() {
+    let variant = Value::Variant(Box::new(Value::String(String::new())));
+    let value = Value::Struct(vec![Value::Byte(4), variant]);
+    assert_eq!(
+        Header::try_from(value),
+        Err(DecodeError::ErrorError(ErrorError::LengthError(0)))
+    );
 }
 
 #[test]

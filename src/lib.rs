@@ -18,7 +18,7 @@ pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
 pub use header::Header;
 pub use message::{Message, MessageFlags, MessageHeader, MessageType};
 pub use value::{
-    Bus, BusError, Interface, InterfaceError, Member, MemberError, ObjectPath, ObjectPathError,
-    Value, BUS_REGEX, INTERFACE_REGEX, MAXIMUM_NAME_LENGTH, MEMBER_REGEX,
-    OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX,
+    Bus, BusError, Error, ErrorError, Interface, InterfaceError, Member, MemberError, ObjectPath,
+    ObjectPathError, Value, BUS_REGEX, ERROR_REGEX, INTERFACE_REGEX, MAXIMUM_NAME_LENGTH,
+    MEMBER_REGEX, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX,
 };

@@ -1,7 +1,8 @@
 use super::message::Message;
 use super::{MessageFlags, MessageType};
-use crate::{Bus, Header, Interface, Member, ObjectPath, Value};
+use crate::{Bus, Error, Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
+use std::convert::TryInto;
 
 macro_rules! get_header {
     ($self:ident, $enum_case:ident) => {
@@ -55,7 +56,7 @@ impl MessageHeader {
     }
 
     /// Get the `ErrorName`, if there is one in the header field.
-    pub fn get_error_name(&self) -> Option<&str> {
+    pub fn get_error_name(&self) -> Option<&Error> {
         get_header!(self, ErrorName);
     }
 
@@ -150,7 +151,7 @@ impl MessageHeader {
             })
         } else {
             Err(self.error(
-                "org.freedesktop.DBus.Error.MessageType".to_string(),
+                "org.freedesktop.DBus.Error.MessageType".try_into().unwrap(),
                 "Message is not a method call".to_string(),
             ))
         }
@@ -160,7 +161,9 @@ impl MessageHeader {
     pub fn unknown_property(&self, property: &str) -> Message {
         let message = format!("does not have a property {}", property);
         self.error(
-            "org.freedesktop.DBus.Error.UnknownProperty".to_string(),
+            "org.freedesktop.DBus.Error.UnknownProperty"
+                .try_into()
+                .unwrap(),
             message,
         )
     }
@@ -170,7 +173,7 @@ impl MessageHeader {
         if let Some(path) = self.get_path() {
             let message = format!("does not have a path {}", path);
             Some(self.error(
-                "org.freedesktop.DBus.Error.UnknownPath".to_string(),
+                "org.freedesktop.DBus.Error.UnknownPath".try_into().unwrap(),
                 message,
             ))
         } else {
@@ -182,10 +185,14 @@ impl MessageHeader {
     pub fn unknown_interface(&self) -> Option<Message> {
         if let Some(interface) = self.get_interface() {
             let message = format!("does not have an interface {}", interface);
-            Some(self.error(
-                "org.freedesktop.DBus.Error.UnknownInterface".to_string(),
-                message,
-            ))
+            Some(
+                self.error(
+                    "org.freedesktop.DBus.Error.UnknownInterface"
+                        .try_into()
+                        .unwrap(),
+                    message,
+                ),
+            )
         } else {
             None
         }
@@ -195,25 +202,29 @@ impl MessageHeader {
     pub fn unknown_member(&self) -> Option<Message> {
         if let Some(member) = self.get_member() {
             let message = format!("does not have a member {}", member);
-            Some(self.error(
-                "org.freedesktop.DBus.Error.UnknownMember".to_string(),
-                message,
-            ))
+            Some(
+                self.error(
+                    "org.freedesktop.DBus.Error.UnknownMember"
+                        .try_into()
+                        .unwrap(),
+                    message,
+                ),
+            )
         } else {
             None
         }
     }
 
     /// Create an invalid args error message from this `Message`.
-    pub fn invalid_args(&self, reason: &str) -> Message {
+    pub fn invalid_args(&self, reason: String) -> Message {
         self.error(
-            "org.freedesktop.DBus.Error.InvalidArgs".to_string(),
-            reason.to_string(),
+            "org.freedesktop.DBus.Error.InvalidArgs".try_into().unwrap(),
+            reason,
         )
     }
 
     /// Create an error message from this `Message`.
-    pub fn error(&self, name: String, message: String) -> Message {
+    pub fn error(&self, error: Error, message: String) -> Message {
         let message_type = MessageType::Error;
 
         let message_flags = MessageFlags::NO_REPLY_EXPECTED;
@@ -227,7 +238,7 @@ impl MessageHeader {
             headers.insert(Header::Sender(destination.clone()));
         }
         headers.insert(Header::ReplySerial(self.get_serial()));
-        headers.insert(Header::ErrorName(name));
+        headers.insert(Header::ErrorName(error));
 
         let header = MessageHeader {
             is_le: self.is_le,
