@@ -17,7 +17,7 @@ cargo test --verbose --all
 .travis/zip.sh
 
 # Convert gcno and gcda files into lcov
-./grcov ccov.zip -s . -t lcov --branch -o lcov.info \
+./grcov ccov.zip -s . -t lcov -o lcov.info \
 	--ignore-not-existing --ignore "/*" --ignore "tests/*" \
 	--excl-line "#\[derive\(" --excl-br-line "#\[derive\("
 
