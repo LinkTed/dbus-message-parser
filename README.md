@@ -9,7 +9,7 @@ A library to encode and decode [DBus message](https://dbus.freedesktop.org/doc/d
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-dbus-message-parser = "2.1"
+dbus-message-parser = "3.0"
 ```
 
 ## Example
