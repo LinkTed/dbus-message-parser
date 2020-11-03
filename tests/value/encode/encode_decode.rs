@@ -4,8 +4,12 @@ use std::cmp::Ordering;
 
 fn encode_decode(value_1: &Value, is_le: bool) {
     let mut bytes = BytesMut::new();
+    #[cfg(target_family = "unix")]
     let mut fds = Vec::new();
+    #[cfg(target_family = "unix")]
     let mut encoder = Encoder::new(&mut bytes, &mut fds);
+    #[cfg(not(target_family = "unix"))]
+    let mut encoder = Encoder::new(&mut bytes);
     encoder.value(value_1, is_le).unwrap();
 
     let mut decoder = Decoder::new(&bytes);
