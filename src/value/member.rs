@@ -15,7 +15,7 @@ lazy_static! {
 /// This represents a [member name].
 ///
 /// [member name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
-#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct Member(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`Member`].

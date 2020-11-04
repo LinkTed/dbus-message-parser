@@ -15,7 +15,7 @@ lazy_static! {
 /// This represents an [interface name].
 ///
 /// [interface name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
-#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct Interface(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`Interface`].

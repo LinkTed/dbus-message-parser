@@ -19,7 +19,7 @@ lazy_static! {
 /// This represents a [object path].
 ///
 /// [object path]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
-#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct ObjectPath(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`ObjectPath`].
