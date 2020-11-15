@@ -149,6 +149,7 @@ impl Message {
     }
 
     /// It is true if the message contains an `Interface` in the header fields.
+    #[inline]
     pub fn has_interface(&self) -> bool {
         self.header.has_interface()
     }
@@ -159,6 +160,7 @@ impl Message {
     }
 
     /// It is true if the message contains an `Member` in the header fields.
+    #[inline]
     pub fn has_member(&self) -> bool {
         self.header.has_member()
     }
@@ -169,6 +171,7 @@ impl Message {
     }
 
     /// It is true if the message contains an `ErrorName` in the header fields.
+    #[inline]
     pub fn has_error_name(&self) -> bool {
         self.header.has_error_name()
     }
@@ -205,6 +208,7 @@ impl Message {
 
     /// It is true if the message contains an `UnixFDs` in the header fields.
     #[cfg(target_family = "unix")]
+    #[inline]
     pub fn has_unix_fds(&self) -> bool {
         self.header.has_unix_fds()
     }

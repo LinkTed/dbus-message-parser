@@ -1,5 +1,4 @@
-use super::message::Message;
-use super::{MessageFlags, MessageType};
+use super::{Message, MessageFlags, MessageType};
 use crate::{Bus, Error, Header, Interface, Member, ObjectPath, Value};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
@@ -107,6 +106,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `Path` in the header fields.
+    #[inline]
     pub fn has_path(&self) -> bool {
         self.get_path().is_some()
     }
@@ -117,6 +117,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `Interface` in the header fields.
+    #[inline]
     pub fn has_interface(&self) -> bool {
         self.get_interface().is_some()
     }
@@ -127,6 +128,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `Member` in the header fields.
+    #[inline]
     pub fn has_member(&self) -> bool {
         self.get_member().is_some()
     }
@@ -137,6 +139,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `ErrorName` in the header fields.
+    #[inline]
     pub fn has_error_name(&self) -> bool {
         self.get_error_name().is_some()
     }
@@ -168,6 +171,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `ReplySerial` in the header fields.
+    #[inline]
     pub fn has_replay_serial(&self) -> bool {
         self.get_reply_serial().is_some()
     }
@@ -178,6 +182,7 @@ impl MessageHeader {
     }
 
     /// It is true if the message contains an `Signature` in the header fields.
+    #[inline]
     pub fn has_signature(&self) -> bool {
         self.get_signature().is_some()
     }
@@ -196,6 +201,7 @@ impl MessageHeader {
 
     /// It is true if the message contains an `UnixFDs` in the header fields.
     #[cfg(target_family = "unix")]
+    #[inline]
     pub fn has_unix_fds(&self) -> bool {
         self.get_unix_fds().is_some()
     }
