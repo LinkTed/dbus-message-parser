@@ -1,4 +1,4 @@
-use crate::{Bus, Error, Header, Interface, Member, ObjectPath, Value};
+use crate::{Bus, Error, Interface, Member, MessageHeaderField, ObjectPath, Value};
 use crate::{MessageFlags, MessageHeader, MessageType};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
@@ -25,12 +25,12 @@ impl Message {
         interface: Interface,
         member: Member,
     ) -> Message {
-        let mut headers = BTreeSet::new();
+        let mut fields = BTreeSet::new();
 
-        headers.insert(Header::Destination(destination));
-        headers.insert(Header::Path(object_path));
-        headers.insert(Header::Interface(interface));
-        headers.insert(Header::Member(member));
+        fields.insert(MessageHeaderField::Destination(destination));
+        fields.insert(MessageHeaderField::Path(object_path));
+        fields.insert(MessageHeaderField::Interface(interface));
+        fields.insert(MessageHeaderField::Member(member));
 
         let header = MessageHeader {
             is_le: true,
@@ -38,7 +38,7 @@ impl Message {
             message_flags: MessageFlags::empty(),
             version: 1,
             serial: 0,
-            headers,
+            fields,
         };
         Message {
             header,
@@ -48,11 +48,11 @@ impl Message {
 
     /// Create a `Message` object as a Signal.
     pub fn signal(object_path: ObjectPath, interface: Interface, member: Member) -> Message {
-        let mut headers = BTreeSet::new();
+        let mut fields = BTreeSet::new();
 
-        headers.insert(Header::Path(object_path));
-        headers.insert(Header::Interface(interface));
-        headers.insert(Header::Member(member));
+        fields.insert(MessageHeaderField::Path(object_path));
+        fields.insert(MessageHeaderField::Interface(interface));
+        fields.insert(MessageHeaderField::Member(member));
 
         let header = MessageHeader {
             is_le: true,
@@ -60,7 +60,7 @@ impl Message {
             message_flags: MessageFlags::NO_REPLY_EXPECTED,
             version: 1,
             serial: 0,
-            headers,
+            fields,
         };
         Message {
             header,
@@ -268,7 +268,9 @@ impl Message {
     pub fn split(mut self) -> (MessageHeader, Vec<Value>) {
         let signature = self.get_signature();
         if !signature.is_empty() {
-            self.header.headers.insert(Header::Signature(signature));
+            self.header
+                .fields
+                .insert(MessageHeaderField::Signature(signature));
         }
         (self.header, self.body)
     }

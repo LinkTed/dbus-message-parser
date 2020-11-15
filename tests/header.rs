@@ -1,38 +1,53 @@
 use dbus_message_parser::{
-    BusError, DecodeError, ErrorError, Header, InterfaceError, MemberError, Value,
+    BusError, DecodeError, ErrorError, InterfaceError, MemberError, MessageHeaderField, Value,
 };
 use std::convert::{TryFrom, TryInto};
 
 #[test]
 fn error_1() {
     let value = Value::String("".to_string());
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
 fn error_2() {
     let value = Value::Struct(vec![Value::String("".to_string())]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
 fn error_3() {
     let value = Value::Struct(vec![Value::Byte(1), Value::String("".to_string())]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
 fn error_4() {
     let variant = Value::Variant(Box::new(Value::String("".to_string())));
     let value = Value::Struct(vec![Value::Int32(1), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
 fn error_5() {
     let variant = Value::Variant(Box::new(Value::String("".to_string())));
     let value = Value::Struct(vec![Value::Byte(9), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -42,8 +57,8 @@ fn path() {
     )));
     let value = Value::Struct(vec![Value::Byte(1), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Path("/object/path".try_into().unwrap()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Path("/object/path".try_into().unwrap()))
     );
 }
 
@@ -51,7 +66,10 @@ fn path() {
 fn path_error() {
     let variant = Value::Variant(Box::new(Value::String("/object/path".to_string())));
     let value = Value::Struct(vec![Value::Byte(1), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -59,8 +77,8 @@ fn interface() {
     let variant = Value::Variant(Box::new(Value::String("org.example.interface".to_string())));
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Interface(
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Interface(
             "org.example.interface".try_into().unwrap()
         ))
     );
@@ -70,7 +88,10 @@ fn interface() {
 fn interface_error_1() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(2), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -80,7 +101,7 @@ fn interface_error_2() {
     )));
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::InterfaceError(InterfaceError::RegexError(
             "/org.example.interface".to_string()
         )))
@@ -92,7 +113,7 @@ fn interface_error_3() {
     let variant = Value::Variant(Box::new(Value::String(String::new())));
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::InterfaceError(InterfaceError::LengthError(0)))
     );
 }
@@ -102,8 +123,8 @@ fn member() {
     let variant = Value::Variant(Box::new(Value::String("Get".to_string())));
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Member("Get".try_into().unwrap()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Member("Get".try_into().unwrap()))
     );
 }
 
@@ -111,7 +132,10 @@ fn member() {
 fn member_error_1() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(3), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -119,7 +143,7 @@ fn member_error_2() {
     let variant = Value::Variant(Box::new(Value::String("/Get".to_string())));
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::MemberError(MemberError::RegexError(
             "/Get".to_string()
         )))
@@ -131,7 +155,7 @@ fn member_error_3() {
     let variant = Value::Variant(Box::new(Value::String(String::new())));
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::MemberError(MemberError::LengthError(0)))
     );
 }
@@ -141,8 +165,10 @@ fn error_name() {
     let variant = Value::Variant(Box::new(Value::String("error.name".to_string())));
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::ErrorName("error.name".try_into().unwrap()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::ErrorName(
+            "error.name".try_into().unwrap()
+        ))
     );
 }
 
@@ -150,7 +176,10 @@ fn error_name() {
 fn error_name_error_1() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(4), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -158,7 +187,7 @@ fn error_name_error_2() {
     let variant = Value::Variant(Box::new(Value::String("/error.name".to_string())));
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::ErrorError(ErrorError::RegexError(
             "/error.name".to_string()
         )))
@@ -170,7 +199,7 @@ fn error_name_error_3() {
     let variant = Value::Variant(Box::new(Value::String(String::new())));
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::ErrorError(ErrorError::LengthError(0)))
     );
 }
@@ -179,14 +208,20 @@ fn error_name_error_3() {
 fn reply_serial() {
     let variant = Value::Variant(Box::new(Value::Uint32(1)));
     let value = Value::Struct(vec![Value::Byte(5), variant]);
-    assert_eq!(Header::try_from(value), Ok(Header::ReplySerial(1)));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::ReplySerial(1))
+    );
 }
 
 #[test]
 fn reply_serial_error() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(5), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -196,8 +231,8 @@ fn destination_1() {
     )));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Destination(
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Destination(
             "org.example.destination".try_into().unwrap()
         ))
     );
@@ -208,8 +243,8 @@ fn destination_2() {
     let variant = Value::Variant(Box::new(Value::String(":1.10".to_string())));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Destination(":1.10".try_into().unwrap()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Destination(":1.10".try_into().unwrap()))
     );
 }
 
@@ -217,7 +252,10 @@ fn destination_2() {
 fn destination_error_1() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -227,7 +265,7 @@ fn destination_error_2() {
     )));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::BusError(BusError::RegexError(
             "/org.example.destination".to_string()
         )))
@@ -239,7 +277,7 @@ fn destination_error_3() {
     let variant = Value::Variant(Box::new(Value::String(String::new())));
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::BusError(BusError::LengthError(0)))
     );
 }
@@ -249,8 +287,10 @@ fn sender_1() {
     let variant = Value::Variant(Box::new(Value::String("org.example.sender".to_string())));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Sender("org.example.sender".try_into().unwrap()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Sender(
+            "org.example.sender".try_into().unwrap()
+        ))
     );
 }
 
@@ -259,8 +299,8 @@ fn sender_2() {
     let variant = Value::Variant(Box::new(Value::String(":1.10".to_string())));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Sender(":1.10".try_into().unwrap()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Sender(":1.10".try_into().unwrap()))
     );
 }
 
@@ -268,7 +308,10 @@ fn sender_2() {
 fn sender_error_1() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }
 
 #[test]
@@ -278,7 +321,7 @@ fn sender_error_2() {
     )));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::BusError(BusError::RegexError(
             "/org.example.sender".to_string()
         )))
@@ -290,7 +333,7 @@ fn sender_error_3() {
     let variant = Value::Variant(Box::new(Value::String(String::new())));
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
-        Header::try_from(value),
+        MessageHeaderField::try_from(value),
         Err(DecodeError::BusError(BusError::LengthError(0)))
     );
 }
@@ -300,8 +343,8 @@ fn signature() {
     let variant = Value::Variant(Box::new(Value::Signature("i".to_string())));
     let value = Value::Struct(vec![Value::Byte(8), variant]);
     assert_eq!(
-        Header::try_from(value),
-        Ok(Header::Signature("i".to_string()))
+        MessageHeaderField::try_from(value),
+        Ok(MessageHeaderField::Signature("i".to_string()))
     );
 }
 
@@ -309,5 +352,8 @@ fn signature() {
 fn signature_error() {
     let variant = Value::Variant(Box::new(Value::Int32(1)));
     let value = Value::Struct(vec![Value::Byte(8), variant]);
-    assert_eq!(Header::try_from(value), Err(DecodeError::Header));
+    assert_eq!(
+        MessageHeaderField::try_from(value),
+        Err(DecodeError::Header)
+    );
 }

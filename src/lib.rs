@@ -8,15 +8,15 @@ extern crate bitflags;
 mod decoder;
 mod encoder;
 mod error;
-mod header;
 mod message;
 mod value;
 
 pub use decoder::Decoder;
 pub use encoder::Encoder;
 pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
-pub use header::Header;
-pub use message::{Message, MessageFlags, MessageHeader, MessageHeaderError, MessageType};
+pub use message::{
+    Message, MessageFlags, MessageHeader, MessageHeaderError, MessageHeaderField, MessageType,
+};
 pub use value::{
     Bus, BusError, Error, ErrorError, Interface, InterfaceError, Member, MemberError, ObjectPath,
     ObjectPathError, Value, BUS_REGEX, ERROR_REGEX, INTERFACE_REGEX, MAXIMUM_NAME_LENGTH,

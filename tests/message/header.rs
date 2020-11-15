@@ -1,30 +1,25 @@
-use dbus_message_parser::{Header, MessageFlags, MessageHeader, MessageHeaderError, MessageType};
+use dbus_message_parser::{
+    MessageFlags, MessageHeader, MessageHeaderError, MessageHeaderField, MessageType,
+};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
 fn create_header(
     message_type: MessageType,
-    header_fields: BTreeSet<Header>,
+    fields: BTreeSet<MessageHeaderField>,
 ) -> Result<MessageHeader, MessageHeaderError> {
-    MessageHeader::new(
-        true,
-        message_type,
-        MessageFlags::empty(),
-        1,
-        0,
-        header_fields,
-    )
+    MessageHeader::new(true, message_type, MessageFlags::empty(), 1, 0, fields)
 }
 
 #[test]
 fn method_call() {
     let message_type = MessageType::MethodCall;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Path("/object/path".try_into().unwrap()));
-    header_fields.insert(Header::Member("MethodName".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Path("/object/path".try_into().unwrap()));
+    fields.insert(MessageHeaderField::Member("MethodName".try_into().unwrap()));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert!(message_header.is_ok())
 }
 
@@ -32,10 +27,10 @@ fn method_call() {
 fn method_call_error_1() {
     let message_type = MessageType::MethodCall;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Member("MethodName".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Member("MethodName".try_into().unwrap()));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingPath))
 }
 
@@ -43,10 +38,10 @@ fn method_call_error_1() {
 fn method_call_error_2() {
     let message_type = MessageType::MethodCall;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Path("/object/path".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Path("/object/path".try_into().unwrap()));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingMember))
 }
 
@@ -54,12 +49,14 @@ fn method_call_error_2() {
 fn signal() {
     let message_type = MessageType::Signal;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Path("/object/path".try_into().unwrap()));
-    header_fields.insert(Header::Interface("interface.name".try_into().unwrap()));
-    header_fields.insert(Header::Member("MethodName".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Path("/object/path".try_into().unwrap()));
+    fields.insert(MessageHeaderField::Interface(
+        "interface.name".try_into().unwrap(),
+    ));
+    fields.insert(MessageHeaderField::Member("MethodName".try_into().unwrap()));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert!(message_header.is_ok())
 }
 
@@ -67,11 +64,13 @@ fn signal() {
 fn signal_error_1() {
     let message_type = MessageType::Signal;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Interface("interface.name".try_into().unwrap()));
-    header_fields.insert(Header::Member("MethodName".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Interface(
+        "interface.name".try_into().unwrap(),
+    ));
+    fields.insert(MessageHeaderField::Member("MethodName".try_into().unwrap()));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingPath))
 }
 
@@ -79,11 +78,11 @@ fn signal_error_1() {
 fn signal_error_2() {
     let message_type = MessageType::Signal;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Path("/object/path".try_into().unwrap()));
-    header_fields.insert(Header::Member("MethodName".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Path("/object/path".try_into().unwrap()));
+    fields.insert(MessageHeaderField::Member("MethodName".try_into().unwrap()));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingInterface))
 }
 
@@ -91,11 +90,13 @@ fn signal_error_2() {
 fn signal_error_3() {
     let message_type = MessageType::Signal;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::Path("/object/path".try_into().unwrap()));
-    header_fields.insert(Header::Interface("interface.name".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::Path("/object/path".try_into().unwrap()));
+    fields.insert(MessageHeaderField::Interface(
+        "interface.name".try_into().unwrap(),
+    ));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingMember));
 }
 
@@ -103,11 +104,13 @@ fn signal_error_3() {
 fn error() {
     let message_type = MessageType::Error;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::ErrorName("error.name".try_into().unwrap()));
-    header_fields.insert(Header::ReplySerial(1));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::ErrorName(
+        "error.name".try_into().unwrap(),
+    ));
+    fields.insert(MessageHeaderField::ReplySerial(1));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert!(message_header.is_ok())
 }
 
@@ -115,10 +118,10 @@ fn error() {
 fn error_error_1() {
     let message_type = MessageType::Error;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::ReplySerial(1));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::ReplySerial(1));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingErrorName))
 }
 
@@ -126,10 +129,12 @@ fn error_error_1() {
 fn error_error_2() {
     let message_type = MessageType::Error;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::ErrorName("error.name".try_into().unwrap()));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::ErrorName(
+        "error.name".try_into().unwrap(),
+    ));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingReplySerial))
 }
 
@@ -137,10 +142,10 @@ fn error_error_2() {
 fn method_return() {
     let message_type = MessageType::MethodReturn;
 
-    let mut header_fields = BTreeSet::new();
-    header_fields.insert(Header::ReplySerial(1));
+    let mut fields = BTreeSet::new();
+    fields.insert(MessageHeaderField::ReplySerial(1));
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert!(message_header.is_ok())
 }
 
@@ -148,8 +153,8 @@ fn method_return() {
 fn method_return_error() {
     let message_type = MessageType::MethodReturn;
 
-    let header_fields = BTreeSet::new();
+    let fields = BTreeSet::new();
 
-    let message_header = create_header(message_type, header_fields);
+    let message_header = create_header(message_type, fields);
     assert_eq!(message_header, Err(MessageHeaderError::MissingReplySerial))
 }

@@ -1,4 +1,4 @@
-use crate::{EncodeResult, Encoder, Header, MessageHeader, Value};
+use crate::{EncodeResult, Encoder, MessageHeader, MessageHeaderField, Value};
 use num_traits::ToPrimitive;
 
 impl<'a> Encoder<'a> {
@@ -23,9 +23,9 @@ impl<'a> Encoder<'a> {
         self.byte(message_header.version);
 
         // Add the signature of the body to the header fields
-        let mut headers = message_header.headers.clone();
+        let mut fields = message_header.fields.clone();
         let body_length = if let Some((body_length, body_signature)) = body {
-            headers.insert(Header::Signature(body_signature));
+            fields.insert(MessageHeaderField::Signature(body_signature));
             body_length
         } else {
             0
@@ -35,7 +35,7 @@ impl<'a> Encoder<'a> {
         self.uint_32(message_header.serial, is_le);
 
         // Encode the header fields.
-        let headers: Vec<Value> = headers.into_iter().map(Value::from).collect();
+        let headers: Vec<Value> = fields.into_iter().map(Value::from).collect();
         self.array(&headers, "(yv)", is_le)?;
 
         Ok(())

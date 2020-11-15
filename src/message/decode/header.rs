@@ -1,5 +1,6 @@
 use crate::{
-    DecodeError, DecodeResult, Decoder, Header, MessageFlags, MessageHeader, MessageType, Value,
+    DecodeError, DecodeResult, Decoder, MessageFlags, MessageHeader, MessageHeaderField,
+    MessageType, Value,
 };
 use num_traits::FromPrimitive;
 use std::collections::BTreeSet;
@@ -78,8 +79,8 @@ where
                 return Err(DecodeError::Header);
             }
             for h in a {
-                let header = Header::try_from(h)?;
-                if let Header::Signature(signature) = header {
+                let header = MessageHeaderField::try_from(h)?;
+                if let MessageHeaderField::Signature(signature) = header {
                     body_signature = Some(signature);
                 } else {
                     headers.insert(header);

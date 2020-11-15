@@ -6,6 +6,6 @@ mod message;
 mod types;
 
 pub use flags::MessageFlags;
-pub use header::{MessageHeader, MessageHeaderError};
+pub use header::{MessageHeader, MessageHeaderError, MessageHeaderField};
 pub use message::Message;
 pub use types::MessageType;

@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 ///
 /// [header field]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-fields
 #[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
-pub enum Header {
+pub enum MessageHeaderField {
     Path(ObjectPath),
     Interface(Interface),
     Member(Member),
@@ -18,7 +18,7 @@ pub enum Header {
     UnixFDs(u32),
 }
 
-impl TryFrom<Value> for Header {
+impl TryFrom<Value> for MessageHeaderField {
     type Error = DecodeError;
 
     fn try_from(v: Value) -> Result<Self, Self::Error> {
@@ -38,7 +38,7 @@ impl TryFrom<Value> for Header {
                         1 => {
                             // The header field is a Path.
                             if let Value::ObjectPath(o) = v {
-                                Ok(Header::Path(o))
+                                Ok(MessageHeaderField::Path(o))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -46,7 +46,7 @@ impl TryFrom<Value> for Header {
                         2 => {
                             // The header field is an Interface.
                             if let Value::String(s) = v {
-                                Ok(Header::Interface(Interface::try_from(s)?))
+                                Ok(MessageHeaderField::Interface(Interface::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -54,7 +54,7 @@ impl TryFrom<Value> for Header {
                         3 => {
                             // The header field is an Member.
                             if let Value::String(s) = v {
-                                Ok(Header::Member(Member::try_from(s)?))
+                                Ok(MessageHeaderField::Member(Member::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -62,7 +62,7 @@ impl TryFrom<Value> for Header {
                         4 => {
                             // The header field is an ErrorName.
                             if let Value::String(s) = v {
-                                Ok(Header::ErrorName(Error::try_from(s)?))
+                                Ok(MessageHeaderField::ErrorName(Error::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -70,7 +70,7 @@ impl TryFrom<Value> for Header {
                         5 => {
                             // The header field is a ReplySerial.
                             if let Value::Uint32(u) = v {
-                                Ok(Header::ReplySerial(u))
+                                Ok(MessageHeaderField::ReplySerial(u))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -78,7 +78,7 @@ impl TryFrom<Value> for Header {
                         6 => {
                             // The header field is a Destination.
                             if let Value::String(s) = v {
-                                Ok(Header::Destination(Bus::try_from(s)?))
+                                Ok(MessageHeaderField::Destination(Bus::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -86,7 +86,7 @@ impl TryFrom<Value> for Header {
                         7 => {
                             // The header field is a Sender.
                             if let Value::String(s) = v {
-                                Ok(Header::Sender(Bus::try_from(s)?))
+                                Ok(MessageHeaderField::Sender(Bus::try_from(s)?))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -94,7 +94,7 @@ impl TryFrom<Value> for Header {
                         8 => {
                             // The header field is a Signature.
                             if let Value::Signature(s) = v {
-                                Ok(Header::Signature(s))
+                                Ok(MessageHeaderField::Signature(s))
                             } else {
                                 Err(DecodeError::Header)
                             }
@@ -103,7 +103,7 @@ impl TryFrom<Value> for Header {
                         9 => {
                             // The header field is a UnixFds.
                             if let Value::Uint32(u) = v {
-                                Ok(Header::UnixFDs(u))
+                                Ok(MessageHeaderField::UnixFDs(u))
                             } else {
                                 Err(DecodeError::Header)
                             }

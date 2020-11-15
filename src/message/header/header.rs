@@ -1,12 +1,14 @@
-use super::{Message, MessageFlags, MessageType};
-use crate::{Bus, Error, Header, Interface, Member, ObjectPath, Value};
+use crate::{
+    Bus, Error, Interface, Member, Message, MessageFlags, MessageHeaderError, MessageHeaderField,
+    MessageType, ObjectPath, Value,
+};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
 macro_rules! get_header {
     ($self:ident, $enum_case:ident) => {
-        for h in &$self.headers {
-            if let Header::$enum_case(value) = h {
+        for h in &$self.fields {
+            if let MessageHeaderField::$enum_case(value) = h {
                 return Some(value);
             }
         }
@@ -15,26 +17,17 @@ macro_rules! get_header {
     };
 }
 
-#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
-pub enum MessageHeaderError {
-    MissingPath,
-    MissingInterface,
-    MissingMember,
-    MissingErrorName,
-    MissingReplySerial,
-}
-
 /// This represents a DBus [message header].
 ///
 /// [message header]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol
 #[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub struct MessageHeader {
-    pub(super) is_le: bool,
-    pub(super) message_type: MessageType,
-    pub(super) message_flags: MessageFlags,
-    pub(super) version: u8,
-    pub(super) serial: u32,
-    pub(super) headers: BTreeSet<Header>,
+    pub(crate) is_le: bool,
+    pub(crate) message_type: MessageType,
+    pub(crate) message_flags: MessageFlags,
+    pub(crate) version: u8,
+    pub(crate) serial: u32,
+    pub(crate) fields: BTreeSet<MessageHeaderField>,
 }
 
 impl MessageHeader {
@@ -48,7 +41,7 @@ impl MessageHeader {
         message_flags: MessageFlags,
         version: u8,
         serial: u32,
-        headers: BTreeSet<Header>,
+        fields: BTreeSet<MessageHeaderField>,
     ) -> Result<MessageHeader, MessageHeaderError> {
         let header = MessageHeader {
             is_le,
@@ -56,7 +49,7 @@ impl MessageHeader {
             message_flags,
             version,
             serial,
-            headers,
+            fields,
         };
         match header.message_type {
             MessageType::MethodCall => {
@@ -161,8 +154,8 @@ impl MessageHeader {
 
     /// Get the `ReplySerial` number, if there is one in the header field.
     pub fn get_reply_serial(&self) -> Option<u32> {
-        for h in &self.headers {
-            if let Header::ReplySerial(serial) = h {
+        for h in &self.fields {
+            if let MessageHeaderField::ReplySerial(serial) = h {
                 return Some(*serial);
             }
         }
@@ -190,8 +183,8 @@ impl MessageHeader {
     /// Get the `UnixFDs`, if there is one in the header field.
     #[cfg(target_family = "unix")]
     pub fn get_unix_fds(&self) -> Option<u32> {
-        for h in &self.headers {
-            if let Header::UnixFDs(fds) = h {
+        for h in &self.fields {
+            if let MessageHeaderField::UnixFDs(fds) = h {
                 return Some(*fds);
             }
         }
@@ -214,17 +207,17 @@ impl MessageHeader {
 
             let message_flags = MessageFlags::NO_REPLY_EXPECTED;
 
-            let mut headers = BTreeSet::<Header>::new();
+            let mut fields = BTreeSet::new();
 
             if let Some(sender) = self.get_sender() {
-                headers.insert(Header::Destination(sender.clone()));
+                fields.insert(MessageHeaderField::Destination(sender.clone()));
             }
 
             if let Some(destination) = self.get_destination() {
-                headers.insert(Header::Sender(destination.clone()));
+                fields.insert(MessageHeaderField::Sender(destination.clone()));
             }
 
-            headers.insert(Header::ReplySerial(self.get_serial()));
+            fields.insert(MessageHeaderField::ReplySerial(self.get_serial()));
 
             let header = MessageHeader {
                 is_le: self.is_le,
@@ -232,7 +225,7 @@ impl MessageHeader {
                 message_flags,
                 version: 1,
                 serial: 0,
-                headers,
+                fields,
             };
             Ok(Message {
                 header,
@@ -308,16 +301,16 @@ impl MessageHeader {
 
         let message_flags = MessageFlags::NO_REPLY_EXPECTED;
 
-        let mut headers = BTreeSet::<Header>::new();
+        let mut fields = BTreeSet::new();
         if let Some(sender) = self.get_sender() {
-            headers.insert(Header::Destination(sender.clone()));
+            fields.insert(MessageHeaderField::Destination(sender.clone()));
         }
 
         if let Some(destination) = self.get_destination() {
-            headers.insert(Header::Sender(destination.clone()));
+            fields.insert(MessageHeaderField::Sender(destination.clone()));
         }
-        headers.insert(Header::ReplySerial(self.get_serial()));
-        headers.insert(Header::ErrorName(error));
+        fields.insert(MessageHeaderField::ReplySerial(self.get_serial()));
+        fields.insert(MessageHeaderField::ErrorName(error));
 
         let header = MessageHeader {
             is_le: self.is_le,
@@ -325,7 +318,7 @@ impl MessageHeader {
             message_flags,
             version: 1,
             serial: 0,
-            headers,
+            fields,
         };
         Message {
             header,
