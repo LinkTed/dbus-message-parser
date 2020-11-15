@@ -89,14 +89,8 @@ where
             return Err(DecodeError::Header);
         }
 
-        let message_header = MessageHeader {
-            is_le,
-            message_type,
-            message_flags,
-            version,
-            serial,
-            headers,
-        };
+        let message_header =
+            MessageHeader::new(is_le, message_type, message_flags, version, serial, headers)?;
 
         if body_length == 0 {
             if body_signature.is_none() {

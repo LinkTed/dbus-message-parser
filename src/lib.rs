@@ -16,7 +16,7 @@ pub use decoder::Decoder;
 pub use encoder::Encoder;
 pub use error::{DecodeError, DecodeResult, EncodeError, EncodeResult};
 pub use header::Header;
-pub use message::{Message, MessageFlags, MessageHeader, MessageType};
+pub use message::{Message, MessageFlags, MessageHeader, MessageHeaderError, MessageType};
 pub use value::{
     Bus, BusError, Error, ErrorError, Interface, InterfaceError, Member, MemberError, ObjectPath,
     ObjectPathError, Value, BUS_REGEX, ERROR_REGEX, INTERFACE_REGEX, MAXIMUM_NAME_LENGTH,

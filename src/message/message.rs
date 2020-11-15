@@ -1,7 +1,5 @@
-use super::flags::MessageFlags;
-use super::header::MessageHeader;
-use super::types::MessageType;
 use crate::{Bus, Error, Header, Interface, Member, ObjectPath, Value};
+use crate::{MessageFlags, MessageHeader, MessageType};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
@@ -15,6 +13,11 @@ pub struct Message {
 }
 
 impl Message {
+    /// Create a `Message` object.
+    pub fn new(header: MessageHeader, body: Vec<Value>) -> Message {
+        Message { header, body }
+    }
+
     /// Create a `Message` object as a MethodCall.
     pub fn method_call(
         destination: Bus,

@@ -29,7 +29,8 @@ where
             let is_le = header.is_le;
             let body = self.value(is_le, &body_signature)?;
             if end == self.offset {
-                Ok(Message { header, body })
+                let msg = Message::new(header, body);
+                Ok(msg)
             } else {
                 Err(DecodeError::BodyLength(end, self.offset))
             }

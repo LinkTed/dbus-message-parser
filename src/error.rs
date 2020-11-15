@@ -1,4 +1,6 @@
-use crate::{BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, Value};
+use crate::{
+    BusError, ErrorError, InterfaceError, MemberError, MessageHeaderError, ObjectPathError, Value,
+};
 use std::num::TryFromIntError;
 use std::string::FromUtf8Error;
 
@@ -51,6 +53,7 @@ pub enum DecodeError {
     StructRecursion,
     OutOfBoundsFds,
     BodyLength(usize, usize),
+    MessageHeaderError(MessageHeaderError),
 }
 
 impl From<FromUtf8Error> for DecodeError {
@@ -86,5 +89,11 @@ impl From<MemberError> for DecodeError {
 impl From<ErrorError> for DecodeError {
     fn from(e: ErrorError) -> Self {
         DecodeError::ErrorError(e)
+    }
+}
+
+impl From<MessageHeaderError> for DecodeError {
+    fn from(e: MessageHeaderError) -> Self {
+        DecodeError::MessageHeaderError(e)
     }
 }

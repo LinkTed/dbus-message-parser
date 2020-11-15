@@ -16,6 +16,15 @@ macro_rules! get_header {
     };
 }
 
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
+pub enum MessageHeaderError {
+    MissingPath,
+    MissingInterface,
+    MissingMember,
+    MissingErrorName,
+    MissingReplySerial,
+}
+
 /// This represents a DBus [message header].
 ///
 /// [message header]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol
@@ -30,9 +39,76 @@ pub struct MessageHeader {
 }
 
 impl MessageHeader {
+    /// Create a `MessageHeader` object. It can fail if the required [header fields] are not
+    /// present.
+    ///
+    /// [header fields]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-fields
+    pub fn new(
+        is_le: bool,
+        message_type: MessageType,
+        message_flags: MessageFlags,
+        version: u8,
+        serial: u32,
+        headers: BTreeSet<Header>,
+    ) -> Result<MessageHeader, MessageHeaderError> {
+        let header = MessageHeader {
+            is_le,
+            message_type,
+            message_flags,
+            version,
+            serial,
+            headers,
+        };
+        match header.message_type {
+            MessageType::MethodCall => {
+                if !header.has_path() {
+                    return Err(MessageHeaderError::MissingPath);
+                }
+
+                if !header.has_member() {
+                    return Err(MessageHeaderError::MissingMember);
+                }
+            }
+            MessageType::Signal => {
+                if !header.has_path() {
+                    return Err(MessageHeaderError::MissingPath);
+                }
+
+                if !header.has_interface() {
+                    return Err(MessageHeaderError::MissingInterface);
+                }
+
+                if !header.has_member() {
+                    return Err(MessageHeaderError::MissingMember);
+                }
+            }
+            MessageType::Error => {
+                if !header.has_error_name() {
+                    return Err(MessageHeaderError::MissingErrorName);
+                }
+
+                if !header.has_replay_serial() {
+                    return Err(MessageHeaderError::MissingReplySerial);
+                }
+            }
+            MessageType::MethodReturn => {
+                if !header.has_replay_serial() {
+                    return Err(MessageHeaderError::MissingReplySerial);
+                }
+            }
+        }
+
+        Ok(header)
+    }
+
     /// Get the `Path`, if there is one in the header field.
     pub fn get_path(&self) -> Option<&ObjectPath> {
         get_header!(self, Path);
+    }
+
+    /// It is true if the message contains an `Path` in the header fields.
+    pub fn has_path(&self) -> bool {
+        self.get_path().is_some()
     }
 
     /// Get the `Interface`, if there is one in the header field.
@@ -89,6 +165,11 @@ impl MessageHeader {
         }
 
         None
+    }
+
+    /// It is true if the message contains an `ReplySerial` in the header fields.
+    pub fn has_replay_serial(&self) -> bool {
+        self.get_reply_serial().is_some()
     }
 
     /// Get the `Signature`, if there is one in the header field.
