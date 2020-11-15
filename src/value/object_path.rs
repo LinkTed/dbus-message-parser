@@ -129,7 +129,9 @@ impl ObjectPath {
     /// assert!(!base.start_with(&base));
     /// ```
     pub fn start_with(&self, base: &ObjectPath) -> bool {
-        if self.0.starts_with(&base.0) {
+        if base.0 == "/" {
+            true
+        } else if self.0.starts_with(&base.0) {
             if let Some(c) = self.0.chars().nth(base.0.len()) {
                 c == '/'
             } else {
