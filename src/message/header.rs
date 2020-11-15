@@ -259,49 +259,39 @@ impl MessageHeader {
 
     /// Create a unknown path error message from this `Message`.
     pub fn unknown_path(&self) -> Option<Message> {
-        if let Some(path) = self.get_path() {
-            let message = format!("does not have a path {}", path);
-            Some(self.error(
-                "org.freedesktop.DBus.Error.UnknownPath".try_into().unwrap(),
-                message,
-            ))
-        } else {
-            None
-        }
+        let path = self.get_path()?;
+        let message = format!("does not have a path {}", path);
+        let msg = self.error(
+            "org.freedesktop.DBus.Error.UnknownPath".try_into().unwrap(),
+            message,
+        );
+        Some(msg)
     }
 
     /// Create a unknown interface error message from this `Message`.
     pub fn unknown_interface(&self) -> Option<Message> {
-        if let Some(interface) = self.get_interface() {
-            let message = format!("does not have an interface {}", interface);
-            Some(
-                self.error(
-                    "org.freedesktop.DBus.Error.UnknownInterface"
-                        .try_into()
-                        .unwrap(),
-                    message,
-                ),
-            )
-        } else {
-            None
-        }
+        let interface = self.get_interface()?;
+        let message = format!("does not have an interface {}", interface);
+        let msg = self.error(
+            "org.freedesktop.DBus.Error.UnknownInterface"
+                .try_into()
+                .unwrap(),
+            message,
+        );
+        Some(msg)
     }
 
     /// Create a unknown member error message from this `Message`.
     pub fn unknown_member(&self) -> Option<Message> {
-        if let Some(member) = self.get_member() {
-            let message = format!("does not have a member {}", member);
-            Some(
-                self.error(
-                    "org.freedesktop.DBus.Error.UnknownMember"
-                        .try_into()
-                        .unwrap(),
-                    message,
-                ),
-            )
-        } else {
-            None
-        }
+        let member = self.get_member()?;
+        let message = format!("does not have a member {}", member);
+        let msg = self.error(
+            "org.freedesktop.DBus.Error.UnknownMember"
+                .try_into()
+                .unwrap(),
+            message,
+        );
+        Some(msg)
     }
 
     /// Create an invalid args error message from this `Message`.
