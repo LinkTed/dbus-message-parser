@@ -255,11 +255,13 @@ impl Message {
     }
 
     /// Get the body.
+    #[inline]
     pub fn get_body(&self) -> &[Value] {
         &self.body
     }
 
     /// Get the message type.
+    #[inline]
     pub fn get_type(&self) -> MessageType {
         self.header.get_type()
     }
