@@ -1,5 +1,7 @@
-use crate::{Bus, Error, Interface, Member, MessageHeaderField, ObjectPath, Value};
-use crate::{MessageFlags, MessageHeader, MessageType};
+use crate::{
+    Bus, Error, Interface, Member, MessageFlags, MessageHeader, MessageHeaderField, MessageType,
+    ObjectPath, Value,
+};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 

@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub enum MessageHeaderError {
     MissingPath,
@@ -7,4 +6,3 @@ pub enum MessageHeaderError {
     MissingErrorName,
     MissingReplySerial,
 }
-
