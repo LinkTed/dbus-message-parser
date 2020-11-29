@@ -54,6 +54,7 @@ pub enum DecodeError {
     OutOfBoundsFds,
     BodyLength(usize, usize),
     MessageHeaderError(MessageHeaderError),
+    IntegerOverflow(usize, usize),
 }
 
 impl From<FromUtf8Error> for DecodeError {

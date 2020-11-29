@@ -25,7 +25,7 @@ where
         self.algin(8)?;
 
         if let Some((body_length, body_signature)) = body {
-            let end = self.offset + body_length as usize;
+            let end = Decoder::<'a, T>::checked_add(self.offset, body_length as usize)?;
             let is_le = header.is_le;
             let body = self.value(is_le, &body_signature)?;
             if end == self.offset {

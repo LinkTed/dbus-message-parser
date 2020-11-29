@@ -46,7 +46,7 @@ where
 
         let mut r = Vec::new();
 
-        let end = self.offset + array_size as usize;
+        let end = Decoder::<'a, T>::checked_add(self.offset, array_size as usize)?;
         while self.offset < end {
             let mut v = self.v(is_le, array_recursion, struct_recursion, signature)?;
             if v.len() == 1 {

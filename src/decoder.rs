@@ -79,4 +79,13 @@ where
     pub fn get_offset_fds(&self) -> usize {
         self.offset_fds
     }
+
+    #[inline]
+    pub(crate) fn checked_add(left: usize, right: usize) -> DecodeResult<usize> {
+        if let Some(result) = left.checked_add(right) {
+            Ok(result)
+        } else {
+            Err(DecodeError::IntegerOverflow(left, right))
+        }
+    }
 }

@@ -192,16 +192,35 @@ where
         Ok(r)
     }
 
+    /// Computes `self.offset += rhs`. Return a [`DecodeError::OffsetOverflow`] if a overflow
+    /// occours, else return the result of the computation.
+    ///
+    /// [`DecodeError::OffsetOverflow`]: dbus_message_parser::DecodeError
+    #[inline]
+    fn add_offset(&mut self, rhs: usize) -> DecodeResult<()> {
+        self.offset = Decoder::<'a, T>::checked_add(self.offset, rhs)?;
+        Ok(())
+    }
+
+    /// Computes `self.offset += rhs + 1`. Return a [`DecodeError::OffsetOverflow`] if a overflow
+    /// occours, else the previous value of `self.offset`.
+    ///
+    /// [`DecodeError::OffsetOverflow`]: dbus_message_parser::DecodeError
+    #[inline]
+    fn str_len(&mut self, rhs: usize) -> DecodeResult<usize> {
+        let start = self.offset;
+        self.add_offset(rhs)?;
+        self.add_offset(1)?;
+        Ok(start)
+    }
+
     /// Decode from a byte array at a specific offset to a `String`.
     /// The size of the length is 4.
     fn str(&mut self, is_le: bool) -> DecodeResult<String> {
-        let string_length = self.u_32(is_le)? as usize;
-
-        let start = self.offset;
-        self.offset += string_length + 1;
-
+        let str_length = self.u_32(is_le)? as usize;
+        let start = self.str_len(str_length)?;
         if let Some(buf) = self.buf.get(start..self.offset) {
-            let string = String::from_utf8(buf[..string_length].to_vec())?;
+            let string = String::from_utf8(buf[..str_length].to_vec())?;
             if *buf.last().unwrap() == 0 {
                 Ok(string)
             } else {
@@ -228,13 +247,10 @@ where
     /// Decode from a byte array at a specific offset to a `String`.
     /// The size of the length is 1.
     pub(crate) fn sig(&mut self) -> DecodeResult<String> {
-        let string_size = self.b()? as usize;
-
-        let start = self.offset;
-        self.offset += string_size + 1;
-
+        let sig_length = self.b()? as usize;
+        let start = self.str_len(sig_length)?;
         if let Some(buf) = self.buf.get(start..self.offset) {
-            let string = String::from_utf8(buf[..string_size].to_vec())?;
+            let string = String::from_utf8(buf[..sig_length].to_vec())?;
             if *buf.last().unwrap() == 0 {
                 Ok(string)
             } else {
