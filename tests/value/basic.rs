@@ -16,28 +16,59 @@ fn object_path_error() {
 }
 
 #[test]
-fn object_path_start_with_1() {
+fn object_path_starts_with_1() {
     let base = ObjectPath::try_from("/object").unwrap();
     let path = ObjectPath::try_from("/object/path").unwrap();
 
-    assert!(path.start_with(&base));
-    assert!(!base.start_with(&base));
+    assert!(path.starts_with(&base));
+    assert!(!base.starts_with(&base));
 }
 
 #[test]
-fn object_path_start_with_2() {
+fn object_path_starts_with_2() {
     let base = ObjectPath::try_from("/object").unwrap();
     let path = ObjectPath::try_from("/object_/path").unwrap();
 
-    assert!(!path.start_with(&base));
-    assert!(!base.start_with(&base));
+    assert!(!path.starts_with(&base));
+    assert!(!base.starts_with(&base));
 }
 
 #[test]
-fn object_path_start_with_3() {
+fn object_path_starts_with_3() {
     let base = ObjectPath::try_from("/").unwrap();
     let path = ObjectPath::try_from("/object/path").unwrap();
 
-    assert!(path.start_with(&base));
-    assert!(base.start_with(&base));
+    assert!(path.starts_with(&base));
+    assert!(!base.starts_with(&base));
+}
+
+#[test]
+fn object_path_strip_prefix_elements_1() {
+    let base = ObjectPath::try_from("/object").unwrap();
+    let path = ObjectPath::try_from("/object/path").unwrap();
+
+    let path_base_vec: Vec<&str> = path.strip_prefix_elements(&base).unwrap().collect();
+
+    assert_eq!(path_base_vec, vec!["path"]);
+    assert!(base.strip_prefix_elements(&base).is_none());
+}
+
+#[test]
+fn object_path_strip_prefix_elements_2() {
+    let base = ObjectPath::try_from("/object").unwrap();
+    let path = ObjectPath::try_from("/object_/path").unwrap();
+
+    assert!(path.strip_prefix_elements(&base).is_none());
+    assert!(base.strip_prefix_elements(&base).is_none());
+}
+
+#[test]
+fn object_path_strip_prefix_elements_3() {
+    let base = ObjectPath::try_from("/").unwrap();
+    let path = ObjectPath::try_from("/object/path").unwrap();
+
+    let path_base_vec: Vec<&str> = path.strip_prefix_elements(&base).unwrap().collect();
+
+    assert_eq!(path_base_vec, vec!["object", "path"]);
+    assert!(base.strip_prefix_elements(&base).is_none());
 }

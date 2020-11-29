@@ -3,6 +3,7 @@ use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
+use std::str::Split;
 
 lazy_static! {
     /// The regular expression for a valid [object path].
@@ -124,21 +125,63 @@ impl ObjectPath {
     /// let path_1 = ObjectPath::try_from("/object/path").unwrap();
     /// let path_2 = ObjectPath::try_from("/object_/path").unwrap();
     ///
-    /// assert!(path_1.start_with(&base));
-    /// assert!(!path_2.start_with(&base));
-    /// assert!(!base.start_with(&base));
+    /// assert!(path_1.starts_with(&base));
+    /// assert!(!path_2.starts_with(&base));
+    /// assert!(!base.starts_with(&base));
     /// ```
-    pub fn start_with(&self, base: &ObjectPath) -> bool {
-        if base.0 == "/" {
-            true
-        } else if self.0.starts_with(&base.0) {
-            if let Some(c) = self.0.chars().nth(base.0.len()) {
-                c == '/'
-            } else {
-                false
-            }
+    pub fn starts_with(&self, base: &ObjectPath) -> bool {
+        if let Some(mut iter) = self.strip_prefix_elements(base) {
+            iter.next().is_some()
         } else {
             false
+        }
+    }
+
+    /// Returns a [`Split`] object with the prefix removed.
+    ///
+    /// [`Split`]: std::str::Split
+    ///
+    /// # Example
+    /// ```
+    /// # use std::convert::TryFrom;
+    /// # use dbus_message_parser::ObjectPath;
+    /// #
+    /// let base = ObjectPath::try_from("/object").unwrap();
+    ///
+    /// let path_1 = ObjectPath::try_from("/object/path").unwrap();
+    /// let path_2 = ObjectPath::try_from("/object_/path").unwrap();
+    /// let path_3 = ObjectPath::try_from("/object/path/element").unwrap();
+    ///
+    /// let path_1_base_vec: Vec<&str> = path_1.strip_prefix_elements(&base).unwrap().collect();
+    /// let path_3_base_vec: Vec<&str> = path_3.strip_prefix_elements(&base).unwrap().collect();
+    ///
+    /// assert_eq!(path_1_base_vec, vec!["path"]);
+    /// assert!(path_2.strip_prefix_elements(&base).is_none());
+    /// assert_eq!(path_3_base_vec, vec!["path", "element"]);
+    /// assert!(base.strip_prefix_elements(&base).is_none());
+    /// ```
+    pub fn strip_prefix_elements<'a, 'b>(
+        &'a self,
+        base: &'b ObjectPath,
+    ) -> Option<Split<'a, char>> {
+        let mut self_iter = self.0.split('/');
+        if self != "/" && base == "/" {
+            self_iter.next()?;
+            return Some(self_iter);
+        }
+        let mut base_iter = base.0.split('/');
+        loop {
+            let self_iter_prev = self_iter.clone();
+            match (self_iter.next(), base_iter.next()) {
+                (Some(ref x), Some(ref y)) => {
+                    if x != y {
+                        return None;
+                    }
+                }
+                (Some(_), None) => return Some(self_iter_prev),
+                (None, None) => return None,
+                (None, Some(_)) => return None,
+            }
         }
     }
 }
