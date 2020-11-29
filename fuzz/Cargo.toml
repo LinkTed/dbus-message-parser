@@ -1,26 +1,18 @@
 [package]
-name = "dbus-message-parser-fuzz"
-version = "0.0.0"
-authors = ["Automatically generated"]
-publish = false
+name = "fuzz"
+version = "0.1.0"
+authors = ["LinkTed <link.ted@mailbox.org>"]
 edition = "2018"
-
-[package.metadata]
-cargo-fuzz = true
 
 [dependencies]
 bytes = "0.6.0"
-libfuzzer-sys = "0.3.4"
+afl = "0.8.0"
 
 [dependencies.dbus-message-parser]
 path = ".."
 
-# Prevent this from interfering with workspaces
-[workspace]
-members = ["."]
-
 [[bin]]
 name = "decode_encode_decode"
-path = "fuzz_targets/decode_encode_decode.rs"
+path = "src/decode_encode_decode.rs"
 test = false
 doc = false
