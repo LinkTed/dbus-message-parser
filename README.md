@@ -1,9 +1,10 @@
 # dbus-message-parser
 A library to encode and decode [DBus message](https://dbus.freedesktop.org/doc/dbus-specification.html).
-[![Build status](https://travis-ci.org/LinkTed/dbus-message-parser.svg?branch=master)](https://travis-ci.org/LinkTed/dbus-message-parser)
+[![Build status](https://github.com/LinkTed/dbus-message-parser/workflows/Continuous%20Integration/badge.svg)](https://github.com/LinkTed/dbus-message-parser/actions?query=workflow%3A%22Continuous+Integration%22)
 [![Code coverage](https://codecov.io/gh/LinkTed/dbus-message-parser/branch/master/graph/badge.svg)](https://codecov.io/gh/LinkTed/dbus-message-parser)
 [![Latest version](https://img.shields.io/crates/v/dbus-message-parser.svg)](https://crates.io/crates/dbus-message-parser)
 [![License](https://img.shields.io/crates/l/dbus-message-parser.svg)](https://opensource.org/licenses/LGPL-3.0)
+[![Dependency status](https://deps.rs/repo/github/linkted/dbus-message-parser/status.svg)](https://deps.rs/repo/github/linkted/dbus-message-parser)
 
 ## Usage
 Add this to your `Cargo.toml`:
@@ -40,12 +41,9 @@ fn create_method_call() {
 
     println!("{:?}", msg);
 
-    let mut buffer = BytesMut::new();
-    let mut fds = Vec::new();
-    let mut encoder = Encoder::new(&mut buffer, &mut fds);
-    encoder.message(&msg).unwrap();
+    let bytes = msg.encode().unwrap();
 
-    println!("{:?}", buffer);
+    println!("{:?}", bytes);
 }
 
 fn create_signal() {
@@ -67,12 +65,9 @@ fn create_signal() {
 
     println!("{:?}", signal);
 
-    let mut buffer = BytesMut::new();
-    let mut fds = Vec::new();
-    let mut encoder = Encoder::new(&mut buffer, &mut fds);
-    encoder.message(&signal).unwrap();
+    let bytes = signal.encode().unwrap();
 
-    println!("{:?}", buffer);
+    println!("{:?}", bytes);
 }
 
 fn decode_method_call() {
@@ -89,8 +84,7 @@ fn decode_method_call() {
         \x05\x00\x00\x00\x3a\x31\x2e\x35\x35\x00"[..],
     );
     // Decode the message
-    let mut decoder = Decoder::new(&bytes);
-    let msg = decoder.message();
+    let (msg, _) = Message::decode(bytes).unwrap();
     println!("Message is decoded: {:?}", msg);
 }
 ```
