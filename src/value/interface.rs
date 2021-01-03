@@ -1,9 +1,11 @@
-use crate::MAXIMUM_NAME_LENGTH;
+use crate::value::MAXIMUM_NAME_LENGTH;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
+use thiserror::Error;
 
 lazy_static! {
     /// The regular expression for a valid [interface name].
@@ -19,12 +21,14 @@ lazy_static! {
 pub struct Interface(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`Interface`].
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum InterfaceError {
     /// This error occurs, when the given string was not a valid interface name.
-    RegexError(String),
+    #[error("Interface contains illegal character: {0}")]
+    Regex(String),
     /// This error occurs, when the given string has the wrong length.
-    LengthError(usize),
+    #[error("Interface has the wrong length: {0}")]
+    Length(usize),
 }
 
 impl From<Interface> for String {
@@ -42,10 +46,10 @@ impl TryFrom<String> for Interface {
             if INTERFACE_REGEX.is_match(&value) {
                 Ok(Interface(value))
             } else {
-                Err(InterfaceError::RegexError(value))
+                Err(InterfaceError::Regex(value))
             }
         } else {
-            Err(InterfaceError::LengthError(value_len))
+            Err(InterfaceError::Length(value_len))
         }
     }
 }

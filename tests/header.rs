@@ -1,6 +1,5 @@
-use dbus_message_parser::{
-    BusError, DecodeError, ErrorError, InterfaceError, MemberError, MessageHeaderField, Value,
-};
+use dbus_message_parser::message::{MessageHeaderField, MessageHeaderFieldError};
+use dbus_message_parser::value::{BusError, ErrorError, InterfaceError, MemberError, Value};
 use std::convert::{TryFrom, TryInto};
 
 #[test]
@@ -8,7 +7,9 @@ fn error_1() {
     let value = Value::String("".to_string());
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Struct(Value::String(
+            "".to_string()
+        )))
     );
 }
 
@@ -17,7 +18,7 @@ fn error_2() {
     let value = Value::Struct(vec![Value::String("".to_string())]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Length(1))
     );
 }
 
@@ -26,7 +27,9 @@ fn error_3() {
     let value = Value::Struct(vec![Value::Byte(1), Value::String("".to_string())]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Variant(Value::String(
+            "".to_string()
+        )))
     );
 }
 
@@ -36,7 +39,7 @@ fn error_4() {
     let value = Value::Struct(vec![Value::Int32(1), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Byte(Value::Int32(1)))
     );
 }
 
@@ -46,7 +49,9 @@ fn error_5() {
     let value = Value::Struct(vec![Value::Byte(9), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::UnixFDs(Value::String(
+            "".to_string()
+        )))
     );
 }
 
@@ -68,7 +73,9 @@ fn path_error() {
     let value = Value::Struct(vec![Value::Byte(1), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Path(Value::String(
+            "/object/path".to_string()
+        )))
     );
 }
 
@@ -90,7 +97,7 @@ fn interface_error_1() {
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Interface(Value::Int32(1)))
     );
 }
 
@@ -102,9 +109,9 @@ fn interface_error_2() {
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::InterfaceError(InterfaceError::RegexError(
-            "/org.example.interface".to_string()
-        )))
+        Err(MessageHeaderFieldError::InterfaceError(
+            InterfaceError::Regex("/org.example.interface".to_string())
+        ))
     );
 }
 
@@ -114,7 +121,9 @@ fn interface_error_3() {
     let value = Value::Struct(vec![Value::Byte(2), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::InterfaceError(InterfaceError::LengthError(0)))
+        Err(MessageHeaderFieldError::InterfaceError(
+            InterfaceError::Length(0)
+        ))
     );
 }
 
@@ -134,7 +143,7 @@ fn member_error_1() {
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Member(Value::Int32(1)))
     );
 }
 
@@ -144,7 +153,7 @@ fn member_error_2() {
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::MemberError(MemberError::RegexError(
+        Err(MessageHeaderFieldError::MemberError(MemberError::Regex(
             "/Get".to_string()
         )))
     );
@@ -156,7 +165,7 @@ fn member_error_3() {
     let value = Value::Struct(vec![Value::Byte(3), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::MemberError(MemberError::LengthError(0)))
+        Err(MessageHeaderFieldError::MemberError(MemberError::Length(0)))
     );
 }
 
@@ -178,7 +187,7 @@ fn error_name_error_1() {
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::ErrorName(Value::Int32(1)))
     );
 }
 
@@ -188,7 +197,7 @@ fn error_name_error_2() {
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::ErrorError(ErrorError::RegexError(
+        Err(MessageHeaderFieldError::ErrorError(ErrorError::Regex(
             "/error.name".to_string()
         )))
     );
@@ -200,7 +209,7 @@ fn error_name_error_3() {
     let value = Value::Struct(vec![Value::Byte(4), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::ErrorError(ErrorError::LengthError(0)))
+        Err(MessageHeaderFieldError::ErrorError(ErrorError::Length(0)))
     );
 }
 
@@ -220,7 +229,7 @@ fn reply_serial_error() {
     let value = Value::Struct(vec![Value::Byte(5), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::ReplySerial(Value::Int32(1)))
     );
 }
 
@@ -254,7 +263,7 @@ fn destination_error_1() {
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Destination(Value::Int32(1)))
     );
 }
 
@@ -266,7 +275,7 @@ fn destination_error_2() {
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::BusError(BusError::RegexError(
+        Err(MessageHeaderFieldError::BusError(BusError::Regex(
             "/org.example.destination".to_string()
         )))
     );
@@ -278,7 +287,7 @@ fn destination_error_3() {
     let value = Value::Struct(vec![Value::Byte(6), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::BusError(BusError::LengthError(0)))
+        Err(MessageHeaderFieldError::BusError(BusError::Length(0)))
     );
 }
 
@@ -310,7 +319,7 @@ fn sender_error_1() {
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Sender(Value::Int32(1)))
     );
 }
 
@@ -322,7 +331,7 @@ fn sender_error_2() {
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::BusError(BusError::RegexError(
+        Err(MessageHeaderFieldError::BusError(BusError::Regex(
             "/org.example.sender".to_string()
         )))
     );
@@ -334,17 +343,17 @@ fn sender_error_3() {
     let value = Value::Struct(vec![Value::Byte(7), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::BusError(BusError::LengthError(0)))
+        Err(MessageHeaderFieldError::BusError(BusError::Length(0)))
     );
 }
 
 #[test]
 fn signature() {
-    let variant = Value::Variant(Box::new(Value::Signature("i".to_string())));
+    let variant = Value::Variant(Box::new(Value::Signature("i".try_into().unwrap())));
     let value = Value::Struct(vec![Value::Byte(8), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Ok(MessageHeaderField::Signature("i".to_string()))
+        Ok(MessageHeaderField::Signature("i".try_into().unwrap()))
     );
 }
 
@@ -354,6 +363,6 @@ fn signature_error() {
     let value = Value::Struct(vec![Value::Byte(8), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(DecodeError::Header)
+        Err(MessageHeaderFieldError::Signature(Value::Int32(1)))
     );
 }

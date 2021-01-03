@@ -1,4 +1,4 @@
-use dbus_message_parser::{
+use dbus_message_parser::message::{
     MessageFlags, MessageHeader, MessageHeaderError, MessageHeaderField, MessageType,
 };
 use std::collections::BTreeSet;

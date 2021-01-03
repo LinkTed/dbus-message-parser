@@ -1,9 +1,11 @@
-use crate::MAXIMUM_NAME_LENGTH;
+use crate::value::MAXIMUM_NAME_LENGTH;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
+use thiserror::Error as ThisError;
 
 lazy_static! {
     /// The regular expression for a valid [error name].
@@ -19,12 +21,14 @@ lazy_static! {
 pub struct Error(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`Error`].
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, ThisError)]
 pub enum ErrorError {
     /// This error occurs, when the given string was not a valid error name.
-    RegexError(String),
+    #[error("Error contains illegal character: {0}")]
+    Regex(String),
     /// This error occurs, when the given string has the wrong length.
-    LengthError(usize),
+    #[error("Error has the wrong length: {0}")]
+    Length(usize),
 }
 
 impl From<Error> for String {
@@ -42,10 +46,10 @@ impl TryFrom<String> for Error {
             if ERROR_REGEX.is_match(&value) {
                 Ok(Error(value))
             } else {
-                Err(ErrorError::RegexError(value))
+                Err(ErrorError::Regex(value))
             }
         } else {
-            Err(ErrorError::LengthError(value_len))
+            Err(ErrorError::Length(value_len))
         }
     }
 }

@@ -1,3 +1,5 @@
+use bitflags::bitflags;
+
 bitflags! {
     /// A struct representing the [message flags].
     ///

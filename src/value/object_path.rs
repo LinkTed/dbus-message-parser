@@ -1,9 +1,11 @@
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
 use std::str::Split;
+use thiserror::Error;
 
 lazy_static! {
     /// The regular expression for a valid [object path].
@@ -24,10 +26,11 @@ lazy_static! {
 pub struct ObjectPath(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`ObjectPath`].
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum ObjectPathError {
     /// This error occurs, when the given string was not a valid object path.
-    TryFromError(String),
+    #[error("Length has the wrong length: {0}")]
+    Regex(String),
 }
 
 impl From<ObjectPath> for String {
@@ -43,7 +46,7 @@ impl TryFrom<String> for ObjectPath {
         if OBJECT_PATH_REGEX.is_match(&value) {
             Ok(ObjectPath(value))
         } else {
-            Err(ObjectPathError::TryFromError(value))
+            Err(ObjectPathError::Regex(value))
         }
     }
 }
@@ -92,7 +95,7 @@ impl ObjectPath {
     /// # Example
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use dbus_message_parser::ObjectPath;
+    /// # use dbus_message_parser::value::ObjectPath;
     /// #
     /// let mut object_path = ObjectPath::try_from("/object").unwrap();
     ///
@@ -118,7 +121,7 @@ impl ObjectPath {
     /// # Example
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use dbus_message_parser::ObjectPath;
+    /// # use dbus_message_parser::value::ObjectPath;
     /// #
     /// let base = ObjectPath::try_from("/object").unwrap();
     ///
@@ -144,7 +147,7 @@ impl ObjectPath {
     /// # Example
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use dbus_message_parser::ObjectPath;
+    /// # use dbus_message_parser::value::ObjectPath;
     /// #
     /// let base = ObjectPath::try_from("/object").unwrap();
     ///

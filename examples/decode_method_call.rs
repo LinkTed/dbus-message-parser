@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use dbus_message_parser::Decoder;
+use dbus_message_parser::message::Message;
 
 fn main() {
     // A message encoded as bytes
@@ -15,7 +15,6 @@ fn main() {
         \x05\x00\x00\x00\x3a\x31\x2e\x35\x35\x00"[..],
     );
     // Decode the message
-    let mut decoder = Decoder::new(&bytes);
-    let msg = decoder.message();
+    let (msg, _) = Message::decode(bytes).unwrap();
     println!("Message is decoded: {:?}", msg);
 }

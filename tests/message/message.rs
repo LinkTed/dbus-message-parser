@@ -1,4 +1,5 @@
-use dbus_message_parser::{Message, MessageType, Value};
+use dbus_message_parser::message::{Message, MessageType};
+use dbus_message_parser::value::{ObjectPath, Value};
 use std::convert::TryInto;
 
 fn create_method_call() -> Message {
@@ -11,7 +12,7 @@ fn create_method_call() -> Message {
 }
 
 fn check_error_msg(msg: Message, error_name: &str, error_message: &str) {
-    let (header, body) = msg.split();
+    let (header, body) = msg.split().unwrap();
     assert_eq!(header.get_error_name().unwrap(), error_name);
     assert_eq!(body.len(), 1);
     assert_eq!(body[0], Value::String(error_message.to_string()));
@@ -43,7 +44,8 @@ fn get_reply_serial_none() {
 #[test]
 fn get_path() {
     let msg = create_method_call();
-    assert_eq!(msg.get_path().unwrap(), "/object/path");
+    let object_path: ObjectPath = "/object/path".try_into().unwrap();
+    assert_eq!(msg.get_path().unwrap(), &object_path);
 }
 
 #[test]
@@ -144,13 +146,13 @@ fn get_destination_none() {
 fn get_signature() {
     let mut msg = create_method_call();
     msg.add_value(Value::Uint32(0));
-    assert_eq!(msg.get_signature(), "u");
+    assert_eq!(msg.get_signature(), Some(Ok("u".try_into().unwrap())));
 }
 
 #[test]
 fn get_signature_empty() {
     let msg = create_method_call();
-    assert_eq!(msg.get_signature(), "");
+    assert_eq!(msg.get_signature(), None);
 }
 
 #[test]
@@ -170,15 +172,16 @@ fn get_type() {
 fn split() {
     let mut msg = create_method_call();
     msg.add_value(Value::Uint32(0));
-    let (header, body) = msg.split();
-    assert_eq!(header.get_signature(), Some("u"));
+    let (header, body) = msg.split().unwrap();
+    let signature = "u".try_into().unwrap();
+    assert_eq!(header.get_signature(), Some(&signature));
     assert_eq!(body, &[Value::Uint32(0)][..]);
 }
 
 #[test]
 fn has_signature() {
     let msg = create_method_call();
-    let (header, _) = msg.split();
+    let (header, _) = msg.split().unwrap();
     assert!(!header.has_signature());
 }
 
@@ -250,10 +253,10 @@ fn property_get() {
     let msg = Message::property_get(
         "org.freedesktop.DBus".try_into().unwrap(),
         "/org/freedesktop/DBus".try_into().unwrap(),
-        "org.freedesktop.DBus",
+        "org.freedesktop.DBus".try_into().unwrap(),
         "Interfaces",
     );
-    let (header, body) = msg.split();
+    let (header, body) = msg.split().unwrap();
     assert_eq!(header.get_type(), MessageType::MethodCall);
     assert_eq!(header.get_destination().unwrap(), "org.freedesktop.DBus");
     assert_eq!(header.get_path().unwrap(), "/org/freedesktop/DBus");
@@ -272,9 +275,9 @@ fn properties_get_all() {
     let msg = Message::properties_get_all(
         "org.freedesktop.DBus".try_into().unwrap(),
         "/org/freedesktop/DBus".try_into().unwrap(),
-        "org.freedesktop.DBus",
+        "org.freedesktop.DBus".try_into().unwrap(),
     );
-    let (header, body) = msg.split();
+    let (header, body) = msg.split().unwrap();
     assert_eq!(header.get_type(), MessageType::MethodCall);
     assert_eq!(header.get_destination().unwrap(), "org.freedesktop.DBus");
     assert_eq!(header.get_path().unwrap(), "/org/freedesktop/DBus");
@@ -293,11 +296,11 @@ fn property_set() {
     let msg = Message::property_set(
         "org.freedesktop.DBus".try_into().unwrap(),
         "/org/freedesktop/DBus".try_into().unwrap(),
-        "org.freedesktop.DBus",
+        "org.freedesktop.DBus".try_into().unwrap(),
         "Interfaces",
         value.clone(),
     );
-    let (header, body) = msg.split();
+    let (header, body) = msg.split().unwrap();
     assert_eq!(header.get_type(), MessageType::MethodCall);
     assert_eq!(header.get_destination().unwrap(), "org.freedesktop.DBus");
     assert_eq!(header.get_path().unwrap(), "/org/freedesktop/DBus");

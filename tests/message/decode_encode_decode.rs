@@ -1,26 +1,17 @@
-use bytes::{Bytes, BytesMut};
-use dbus_message_parser::{Decoder, Encoder};
+use bytes::Bytes;
+use dbus_message_parser::message::Message;
 use std::cmp::Ordering;
 
 fn decode_encode_decode(msg: &[u8]) {
     // Decode Bytes to message
     let bytes = Bytes::copy_from_slice(&msg[..]);
-    let mut decoder = Decoder::new(&bytes);
-    let msg_1 = decoder.message().unwrap();
+    let (msg_1, _) = Message::decode(bytes).unwrap();
 
     // Encode message to BytesMut
-    let mut bytes = BytesMut::new();
-    #[cfg(target_family = "unix")]
-    let mut fds = Vec::new();
-    #[cfg(target_family = "unix")]
-    let mut encoder = Encoder::new(&mut bytes, &mut fds);
-    #[cfg(not(target_family = "unix"))]
-    let mut encoder = Encoder::new(&mut bytes);
-    encoder.message(&msg_1).unwrap();
+    let bytes = msg_1.encode().unwrap();
 
     // Decode message again
-    let mut decoder = Decoder::new(&bytes);
-    let msg_2 = decoder.message().unwrap();
+    let (msg_2, _) = Message::decode(bytes.freeze()).unwrap();
 
     // Check if it is equal
     if let Some(ordering) = msg_1.partial_cmp(&msg_2) {
@@ -94,4 +85,42 @@ fn msg_4() {
     \x00\x00";
 
     decode_encode_decode(&msg[..]);
+}
+
+#[test]
+#[cfg(target_family = "unix")]
+fn msg_5() {
+    let fds = [1, 2];
+    let msg = b"\x6c\x01\x00\x01\x08\x00\x00\x00\x00\x00\x00\x00\x68\x00\x00\x00\x01\x01\x6f\x00\
+    \x0c\x00\x00\x00\x2f\x6f\x62\x6a\x65\x63\x74\x2f\x70\x61\x74\x68\x00\x00\x00\x00\x02\x01\x73\
+    \x00\x11\x00\x00\x00\x69\x6e\x74\x65\x72\x66\x61\x63\x65\x2e\x65\x78\x61\x6d\x70\x6c\x65\x00\
+    \x00\x00\x00\x00\x00\x00\x03\x01\x73\x00\x06\x00\x00\x00\x4d\x65\x6d\x62\x65\x72\x00\x00\x06\
+    \x01\x73\x00\x02\x00\x00\x00\x3a\x31\x00\x00\x00\x00\x00\x00\x08\x01\x67\x00\x02\x68\x68\x00\
+    \x09\x01\x75\x00\x02\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00";
+    let bytes = Bytes::copy_from_slice(&msg[..]);
+
+    let (msg_1, offset, offset_fds) = Message::decode_with_fds(bytes, &fds[..]).unwrap();
+    assert_eq!(offset_fds, fds.len());
+    assert_eq!(msg.len(), offset);
+    assert!(msg_1.has_unix_fds());
+
+    let (bytes, fds_2) = msg_1.encode_with_fds().unwrap();
+    let bytes = bytes.freeze();
+    assert_eq!(&fds[..], &fds_2[..]);
+
+    let (msg_2, offset_2, offset_fds_2) =
+        Message::decode_with_fds(bytes.clone(), &fds_2[..]).unwrap();
+    assert_eq!(offset_fds_2, fds_2.len());
+    assert_eq!(bytes.len(), offset_2);
+    assert_eq!(msg_2.get_unix_fds(), Some(2));
+
+    // Check if it is equal
+    if let Some(ordering) = msg_1.partial_cmp(&msg_2) {
+        match ordering {
+            Ordering::Equal => {}
+            ordering => {
+                panic!("\n{:?}\nleft:  {:?}\nright: {:?}", ordering, msg_1, msg_2);
+            }
+        }
+    }
 }

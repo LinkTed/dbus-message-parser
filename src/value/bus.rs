@@ -1,9 +1,11 @@
-use crate::MAXIMUM_NAME_LENGTH;
+use crate::value::MAXIMUM_NAME_LENGTH;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
+use thiserror::Error;
 
 lazy_static! {
     /// The regular expression for a valid [bus name].
@@ -19,12 +21,14 @@ lazy_static! {
 pub struct Bus(String);
 
 /// An enum representing all errors, which can occur during the handling of a [`Bus`].
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum BusError {
     /// This error occurs, when the given string was not a valid bus name.
-    RegexError(String),
+    #[error("Bus contains illegal character: {0}")]
+    Regex(String),
     /// This error occurs, when the given string has the wrong length.
-    LengthError(usize),
+    #[error("Bus has the wrong length: {0}")]
+    Length(usize),
 }
 
 impl From<Bus> for String {
@@ -42,10 +46,10 @@ impl TryFrom<String> for Bus {
             if BUS_REGEX.is_match(&value) {
                 Ok(Bus(value))
             } else {
-                Err(BusError::RegexError(value))
+                Err(BusError::Regex(value))
             }
         } else {
-            Err(BusError::LengthError(value_len))
+            Err(BusError::Length(value_len))
         }
     }
 }
