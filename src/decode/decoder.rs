@@ -1,6 +1,8 @@
 use crate::decode::{DecodeError, DecodeResult};
 use crate::message::MAXIMUM_MESSAGE_LENGTH;
 use bytes::Bytes;
+#[cfg(not(target_family = "unix"))]
+use std::marker::PhantomData;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
@@ -48,6 +50,8 @@ impl<'a> Decoder<'a> {
             fds: &[],
             #[cfg(target_family = "unix")]
             offset_fds: None,
+            #[cfg(not(target_family = "unix"))]
+            phantom: PhantomData,
         }
     }
 
