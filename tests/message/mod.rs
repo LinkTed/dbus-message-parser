@@ -1,4 +1,4 @@
 mod decode_encode_decode;
 mod encode;
 mod header;
-mod message;
+mod message_tests;

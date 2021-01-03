@@ -31,7 +31,7 @@ fn array() {
     let array_signature = "{s(bgav)}".try_into().unwrap();
     let non_empty_variant = Value::Variant(Box::new(Value::Array(Vec::new(), array_signature)));
     let variant_signature = "v".try_into().unwrap();
-    let array = Value::Array(vec![non_empty_variant.clone()], variant_signature);
+    let array = Value::Array(vec![non_empty_variant], variant_signature);
 
     encode_decode(&array, true);
     encode_decode(&array, false);
