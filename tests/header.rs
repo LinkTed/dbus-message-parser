@@ -43,6 +43,7 @@ fn error_4() {
     );
 }
 
+#[cfg(target_family = "unix")]
 #[test]
 fn error_5() {
     let variant = Value::Variant(Box::new(Value::String("".to_string())));
