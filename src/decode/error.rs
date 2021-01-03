@@ -60,10 +60,6 @@ pub enum DecodeError {
     BodyLengthZero(Signature),
     #[error("The body signature is missing, but there body length 0 != {0}")]
     BodySignatureMissing(u32),
-    #[error("The array recursion is 32 <= {0}")]
-    ArrayRecursion(u8),
-    #[error("The struct recursion is 32 <= {0}")]
-    StructRecursion(u8),
     #[error("Not enough FDs: got {0} offset {1}")]
     NotEnoughFds(usize, usize),
     #[error("Could not the body: expected {0} got {1}")]
