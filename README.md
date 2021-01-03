@@ -88,3 +88,9 @@ fn decode_method_call() {
     println!("Message is decoded: {:?}", msg);
 }
 ```
+
+## License
+This project is licensed under the [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0) license.
+
+###Contribution
+Any contribution intentionally submitted for inclusion in `dbus-message-parser` by you, shall be licensed as [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0), without any additional terms or conditions.
