@@ -4,7 +4,6 @@ use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
-use std::ops::Deref;
 use thiserror::Error as ThisError;
 
 lazy_static! {
@@ -69,16 +68,14 @@ impl Display for Error {
     }
 }
 
-impl Deref for Error {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
+impl AsRef<str> for Error {
+    fn as_ref(&self) -> &str {
         &self.0
     }
 }
 
 impl PartialEq<str> for Error {
     fn eq(&self, other: &str) -> bool {
-        self.0 == other
+        self.as_ref() == other
     }
 }

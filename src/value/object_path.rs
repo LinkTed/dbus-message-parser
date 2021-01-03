@@ -3,7 +3,6 @@ use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
-use std::ops::Deref;
 use std::str::Split;
 use thiserror::Error;
 
@@ -66,10 +65,8 @@ impl Display for ObjectPath {
     }
 }
 
-impl Deref for ObjectPath {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
+impl AsRef<str> for ObjectPath {
+    fn as_ref(&self) -> &str {
         &self.0
     }
 }
@@ -82,7 +79,7 @@ impl Default for ObjectPath {
 
 impl PartialEq<str> for ObjectPath {
     fn eq(&self, other: &str) -> bool {
-        self.0 == other
+        self.as_ref() == other
     }
 }
 

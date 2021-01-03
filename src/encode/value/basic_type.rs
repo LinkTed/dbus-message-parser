@@ -149,7 +149,7 @@ impl Encoder {
 
     /// Apply the alignment and encode an `&ObjectPath` into the buffer and use 4 bytes.
     pub fn object_path(&mut self, o: &ObjectPath, is_le: bool) {
-        self.string(o, is_le);
+        self.string(o.as_ref(), is_le);
     }
 
     /// Encode a `&Signature` into the buffer and use 1 bytes.

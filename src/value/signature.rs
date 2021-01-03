@@ -246,7 +246,7 @@ impl Display for Signature {
 
 impl AsRef<str> for Signature {
     fn as_ref(&self) -> &str {
-        self.0.as_ref()
+        &self.0
     }
 }
 
