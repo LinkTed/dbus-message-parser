@@ -10,7 +10,7 @@ pub const MAXIMUM_SIGNATURE_LENGTH: usize = 255;
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum SignatureError {
     #[error("Signature contians a invalid: {0}")]
-    InvalidChar(char),
+    InvalidChar(u8),
     #[error("Array depth is too big: {MAXIMUM_ARRAY_DEPTH} < {0}")]
     ArrayDepth(u8),
     #[error("Struct depth is too big: {MAXIMUM_STRUCT_DEPTH} < {0}")]
@@ -22,7 +22,7 @@ pub enum SignatureError {
     #[error("Signature is too short: got {0} offset {1}")]
     TooShort(usize, usize),
     #[error("The closing curly bracket is missing for the dict at {0} got {1}")]
-    ClosingCurlyBracket(usize, char),
+    ClosingCurlyBracket(usize, u8),
 }
 
 /// Check if the string is a valid signature.
@@ -35,31 +35,29 @@ fn check_signature(signature: &str) -> Result<(), SignatureError> {
     }
 
     while signature_offset < signature_len {
-        get_next_signature(signature, &mut signature_offset, 0, 0, 0)?;
+        get_next_signature(signature.as_bytes(), &mut signature_offset, 0, 0, 0)?;
     }
 
     Ok(())
 }
 
 /// Get the char at offset.
-fn get_char_at(signature: &str, offset: usize) -> Result<char, SignatureError> {
-    match signature.get(offset..(offset + 1)) {
-        Some(s) => match s.chars().next() {
-            Some(c) => Ok(c),
-            None => Err(SignatureError::TooShort(signature.len(), offset)),
-        },
+#[inline]
+fn get_char_at(signature: &[u8], offset: usize) -> Result<u8, SignatureError> {
+    match signature.get(offset) {
+        Some(c) => Ok(*c),
         None => Err(SignatureError::TooShort(signature.len(), offset)),
     }
 }
 
 /// Get the next signature from a `&str`.
 fn get_next_signature<'a>(
-    signature: &'a str,
+    signature: &'a [u8],
     signature_offset: &mut usize,
     array_depth: u8,
     struct_depth: u8,
     dict_depth: u8,
-) -> Result<&'a str, SignatureError> {
+) -> Result<&'a [u8], SignatureError> {
     if MAXIMUM_ARRAY_DEPTH < array_depth {
         return Err(SignatureError::ArrayDepth(array_depth));
     }
@@ -75,12 +73,11 @@ fn get_next_signature<'a>(
     let start = *signature_offset;
     *signature_offset += 1;
     match get_char_at(signature, start)? {
-        'y' | 'b' | 'n' | 'q' | 'i' | 'u' | 'x' | 't' | 'd' | 's' | 'o' | 'g' | 'v' => {
-            Ok(&signature[start..*signature_offset])
-        }
+        b'y' | b'b' | b'n' | b'q' | b'i' | b'u' | b'x' | b't' | b'd' | b's' | b'o' | b'g'
+        | b'v' => Ok(&signature[start..*signature_offset]),
         #[cfg(target_family = "unix")]
-        'h' => Ok(&signature[start..*signature_offset]),
-        'a' => {
+        b'h' => Ok(&signature[start..*signature_offset]),
+        b'a' => {
             get_next_signature(
                 signature,
                 signature_offset,
@@ -90,7 +87,7 @@ fn get_next_signature<'a>(
             )?;
             Ok(&signature[start..*signature_offset])
         }
-        '(' => {
+        b'(' => {
             get_next_signature(
                 signature,
                 signature_offset,
@@ -99,7 +96,7 @@ fn get_next_signature<'a>(
                 dict_depth,
             )?;
             loop {
-                if get_char_at(signature, *signature_offset)? == ')' {
+                if get_char_at(signature, *signature_offset)? == b')' {
                     *signature_offset += 1;
                     return Ok(&signature[start..*signature_offset]);
                 }
@@ -112,7 +109,7 @@ fn get_next_signature<'a>(
                 )?;
             }
         }
-        '{' => {
+        b'{' => {
             get_next_signature(
                 signature,
                 signature_offset,
@@ -130,7 +127,7 @@ fn get_next_signature<'a>(
             )?;
 
             match get_char_at(signature, *signature_offset)? {
-                '}' => {
+                b'}' => {
                     *signature_offset += 1;
                     Ok(&signature[start..*signature_offset])
                 }
@@ -161,43 +158,49 @@ impl Signature {
         if sig.is_empty() {
             return None;
         }
-        let t = match get_char_at(sig, 0).unwrap() {
-            'y' => Type::Byte,
-            'b' => Type::Boolean,
-            'n' => Type::Int16,
-            'q' => Type::Uint16,
-            'i' => Type::Int32,
-            'u' => Type::Uint32,
-            'x' => Type::Int64,
-            't' => Type::Uint64,
-            'd' => Type::Double,
-            's' => Type::String,
-            'o' => Type::ObjectPath,
-            'g' => Type::Signature,
+        let t = match get_char_at(sig.as_bytes(), 0).unwrap() {
+            b'y' => Type::Byte,
+            b'b' => Type::Boolean,
+            b'n' => Type::Int16,
+            b'q' => Type::Uint16,
+            b'i' => Type::Int32,
+            b'u' => Type::Uint32,
+            b'x' => Type::Int64,
+            b't' => Type::Uint64,
+            b'd' => Type::Double,
+            b's' => Type::String,
+            b'o' => Type::ObjectPath,
+            b'g' => Type::Signature,
             #[cfg(target_family = "unix")]
-            'h' => Type::UnixFD,
-            'a' => {
+            b'h' => Type::UnixFD,
+            b'a' => {
                 let mut signature_offset = 1;
-                let sig = get_next_signature(sig, &mut signature_offset, 0, 0, 0).unwrap();
-                Type::Array(Signature(sig.to_owned()))
+                let sig =
+                    get_next_signature(sig.as_bytes(), &mut signature_offset, 0, 0, 0).unwrap();
+                let sig = String::from_utf8(sig.to_owned()).unwrap();
+                Type::Array(Signature(sig))
             }
-            '(' => {
+            b'(' => {
                 let mut signature_offset = 1;
-                get_next_signature(sig, &mut signature_offset, 0, 0, 0).unwrap();
-                while get_char_at(sig, signature_offset).unwrap() != ')' {
-                    get_next_signature(sig, &mut signature_offset, 0, 0, 0).unwrap();
+                get_next_signature(sig.as_bytes(), &mut signature_offset, 0, 0, 0).unwrap();
+                while get_char_at(sig.as_bytes(), signature_offset).unwrap() != b')' {
+                    get_next_signature(sig.as_bytes(), &mut signature_offset, 0, 0, 0).unwrap();
                 }
                 Type::Struct(Signature(sig[1..signature_offset].to_owned()))
             }
-            '{' => {
+            b'{' => {
                 let mut signature_offset = 1;
-                let key = get_next_signature(sig, &mut signature_offset, 0, 0, 0).unwrap();
-                let key = Signature(key.to_owned());
-                let value = get_next_signature(sig, &mut signature_offset, 0, 0, 0).unwrap();
-                let value = Signature(value.to_owned());
+                let key =
+                    get_next_signature(sig.as_bytes(), &mut signature_offset, 0, 0, 0).unwrap();
+                let key = String::from_utf8(key.to_vec()).unwrap();
+                let key = Signature(key);
+                let value =
+                    get_next_signature(sig.as_bytes(), &mut signature_offset, 0, 0, 0).unwrap();
+                let value = String::from_utf8(value.to_owned()).unwrap();
+                let value = Signature(value);
                 Type::DictEntry(key, value)
             }
-            'v' => Type::Variant,
+            b'v' => Type::Variant,
             c => panic!("Invalid char: {}", c),
         };
         Some(t)
@@ -269,10 +272,16 @@ impl<'a> Iterator for SignatureIter<'a> {
             return None;
         }
 
-        let signature =
-            get_next_signature(self.signature.as_ref(), &mut self.signature_offset, 0, 0, 0)
-                .unwrap();
-        let signature = Signature(signature.to_owned());
+        let signature = get_next_signature(
+            self.signature.0.as_bytes(),
+            &mut self.signature_offset,
+            0,
+            0,
+            0,
+        )
+        .unwrap();
+        let signature = String::from_utf8(signature.to_owned()).unwrap();
+        let signature = Signature(signature);
         Some(signature)
     }
 }
