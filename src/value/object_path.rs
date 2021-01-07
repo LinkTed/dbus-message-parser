@@ -1,21 +1,82 @@
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::str::Split;
 use thiserror::Error;
 
-lazy_static! {
-    /// The regular expression for a valid [object path].
-    ///
-    /// [object path]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
-    pub static ref OBJECT_PATH_REGEX: Regex = Regex::new(r"^/([A-Za-z0-9_]+(/[A-Za-z0-9_]+)*)?$").unwrap();
+enum Input {
+    /// [A-Z][a-z][0-9]_
+    AlphanumericAndUnderscore,
+    /// /
+    Slash,
+}
 
-    /// The regular expression for a element of an [object path].
-    ///
-    /// [object path]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
-    pub static ref OBJECT_PATH_ELEMENT_REGEX: Regex = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
+impl TryFrom<u8> for Input {
+    type Error = ObjectPathError;
+
+    fn try_from(c: u8) -> Result<Self, Self::Error> {
+        if c.is_ascii_alphanumeric() || c == b'_' {
+            Ok(Input::AlphanumericAndUnderscore)
+        } else if c == b'/' {
+            Ok(Input::Slash)
+        } else {
+            Err(ObjectPathError::InvalidChar(c))
+        }
+    }
+}
+
+enum State {
+    /// Start state.
+    Start,
+    /// The root slash.
+    Root,
+    /// The begining of the first or subsequent element.
+    ElementBegin,
+    /// The second or subsequent element.
+    Element,
+}
+
+impl State {
+    fn consume(self, i: Input) -> Result<State, ObjectPathError> {
+        match self {
+            State::Start => match i {
+                Input::AlphanumericAndUnderscore => {
+                    Err(ObjectPathError::BeginAlphanumericAndUnderscoreAndHyphen)
+                }
+                Input::Slash => Ok(State::Root),
+            },
+            State::Root => match i {
+                Input::AlphanumericAndUnderscore => Ok(State::Element),
+                Input::Slash => return Err(ObjectPathError::ElementEmtpy),
+            },
+            State::ElementBegin => match i {
+                Input::AlphanumericAndUnderscore => Ok(State::Element),
+                Input::Slash => return Err(ObjectPathError::ElementEmtpy),
+            },
+            State::Element => match i {
+                Input::AlphanumericAndUnderscore => Ok(State::Element),
+                Input::Slash => Ok(State::ElementBegin),
+            },
+        }
+    }
+}
+
+/// Check if the given bytes is a valid [object path].
+///
+/// [object path]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+fn check(error: &[u8]) -> Result<(), ObjectPathError> {
+    let mut state = State::Start;
+    for c in error {
+        let i = Input::try_from(*c)?;
+        state = state.consume(i)?;
+    }
+
+    match state {
+        State::Start => Err(ObjectPathError::Empty),
+        State::Root => Ok(()),
+        State::ElementBegin => Err(ObjectPathError::EndSlash),
+        State::Element => Ok(()),
+    }
 }
 
 /// This represents a [object path].
@@ -27,9 +88,16 @@ pub struct ObjectPath(String);
 /// An enum representing all errors, which can occur during the handling of a [`ObjectPath`].
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum ObjectPathError {
-    /// This error occurs, when the given string was not a valid object path.
-    #[error("Length has the wrong length: {0}")]
-    Regex(String),
+    #[error("ObjectPath must not begin with an alphanumeric or with a '_' or with a '-'")]
+    BeginAlphanumericAndUnderscoreAndHyphen,
+    #[error("ObjectPath must not end with '.'")]
+    EndSlash,
+    #[error("ObjectPath must not be empty")]
+    Empty,
+    #[error("ObjectPath element must not be empty")]
+    ElementEmtpy,
+    #[error("ObjectPath must only contain '[A-Z][a-z][0-9]_/': {0}")]
+    InvalidChar(u8),
 }
 
 impl From<ObjectPath> for String {
@@ -41,21 +109,18 @@ impl From<ObjectPath> for String {
 impl TryFrom<String> for ObjectPath {
     type Error = ObjectPathError;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        if OBJECT_PATH_REGEX.is_match(&value) {
-            Ok(ObjectPath(value))
-        } else {
-            Err(ObjectPathError::Regex(value))
-        }
+    fn try_from(object_path: String) -> Result<Self, Self::Error> {
+        check(object_path.as_bytes())?;
+        Ok(ObjectPath(object_path))
     }
 }
 
 impl TryFrom<&str> for ObjectPath {
     type Error = ObjectPathError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let value = value.to_string();
-        ObjectPath::try_from(value)
+    fn try_from(object_path: &str) -> Result<Self, Self::Error> {
+        check(object_path.as_bytes())?;
+        Ok(ObjectPath(object_path.to_owned()))
     }
 }
 
@@ -102,15 +167,16 @@ impl ObjectPath {
     /// assert_eq!(&object_path, "/object/path");
     /// ```
     pub fn append(&mut self, element: &str) -> bool {
-        if OBJECT_PATH_ELEMENT_REGEX.is_match(element) {
-            if self.0 != "/" {
-                self.0 += "/";
+        for c in element.as_bytes() {
+            if !c.is_ascii_alphanumeric() && *c != b'_' {
+                return false;
             }
-            self.0 += element;
-            true
-        } else {
-            false
         }
+        if self.0 != "/" {
+            self.0 += "/";
+        }
+        self.0 += element;
+        true
     }
 
     /// Determines whether `base` is a prefix of `self`.

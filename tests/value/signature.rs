@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 #[test]
 fn invalid_char_error() {
     let signature = Signature::try_from("w");
-    assert_eq!(signature, Err(SignatureError::InvalidChar('w')))
+    assert_eq!(signature, Err(SignatureError::InvalidChar(b'w')))
 }
 
 #[test]
@@ -39,7 +39,7 @@ fn too_big_error() {
 #[test]
 fn closing_curly_bracket_error() {
     let signature = Signature::try_from("{isi");
-    assert_eq!(signature, Err(SignatureError::ClosingCurlyBracket(3, 'i')))
+    assert_eq!(signature, Err(SignatureError::ClosingCurlyBracket(3, b'i')))
 }
 
 #[test]

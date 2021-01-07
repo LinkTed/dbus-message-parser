@@ -6,11 +6,11 @@ mod object_path;
 mod signature;
 mod value_enum;
 
-pub use bus::{Bus, BusError, BUS_REGEX};
-pub use error::{Error, ErrorError, ERROR_REGEX};
-pub use interface::{Interface, InterfaceError, INTERFACE_REGEX};
-pub use member::{Member, MemberError, MEMBER_REGEX};
-pub use object_path::{ObjectPath, ObjectPathError, OBJECT_PATH_ELEMENT_REGEX, OBJECT_PATH_REGEX};
+pub use bus::{Bus, BusError};
+pub use error::{Error, ErrorError};
+pub use interface::{Interface, InterfaceError};
+pub use member::{Member, MemberError};
+pub use object_path::{ObjectPath, ObjectPathError};
 pub use signature::{Signature, SignatureError, SignatureIter, MAXIMUM_SIGNATURE_LENGTH};
 pub use value_enum::{Type, Value};
 

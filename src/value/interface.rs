@@ -1,16 +1,94 @@
 use crate::value::MAXIMUM_NAME_LENGTH;
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::cmp::{Eq, PartialEq};
 use std::convert::{From, TryFrom};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use thiserror::Error;
 
-lazy_static! {
-    /// The regular expression for a valid [interface name].
-    ///
-    /// [interface name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
-    pub static ref INTERFACE_REGEX: Regex = Regex::new(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]+)+$").unwrap();
+enum Input {
+    /// [A-Z][a-z]_
+    AlphabeticAndUnderscore,
+    /// [0-9]
+    Digit,
+    /// .
+    Dot,
+}
+
+impl TryFrom<u8> for Input {
+    type Error = InterfaceError;
+
+    fn try_from(c: u8) -> Result<Self, Self::Error> {
+        if c.is_ascii_alphabetic() || c == b'_' {
+            Ok(Input::AlphabeticAndUnderscore)
+        } else if c.is_ascii_digit() {
+            Ok(Input::Digit)
+        } else if c == b'.' {
+            Ok(Input::Dot)
+        } else {
+            Err(InterfaceError::InvalidChar(c))
+        }
+    }
+}
+
+enum State {
+    /// The beginning of the first element.
+    FirstElementBegin,
+    /// The second or subsequent character of the first element.
+    FirstElement,
+    /// The beginning of the second or subsequent element.
+    ElementBegin,
+    /// The second or subsequent character of the second or subsequent element.
+    Element,
+}
+
+impl State {
+    #[inline]
+    fn consume(self, i: Input) -> Result<State, InterfaceError> {
+        match self {
+            State::FirstElementBegin => match i {
+                Input::AlphabeticAndUnderscore => Ok(State::FirstElement),
+                Input::Digit => Err(InterfaceError::ElementBeginDigit),
+                Input::Dot => Err(InterfaceError::ElementBeginDot),
+            },
+            State::FirstElement => match i {
+                Input::AlphabeticAndUnderscore => Ok(State::FirstElement),
+                Input::Digit => Ok(State::FirstElement),
+                Input::Dot => Ok(State::ElementBegin),
+            },
+            State::ElementBegin => match i {
+                Input::AlphabeticAndUnderscore => Ok(State::Element),
+                Input::Digit => Err(InterfaceError::ElementBeginDigit),
+                Input::Dot => Err(InterfaceError::ElementBeginDot),
+            },
+            State::Element => match i {
+                Input::AlphabeticAndUnderscore => Ok(State::Element),
+                Input::Digit => Ok(State::Element),
+                Input::Dot => Ok(State::ElementBegin),
+            },
+        }
+    }
+}
+
+/// Check if the given bytes is a valid [interface name].
+///
+/// [interface name]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
+fn check(interface: &[u8]) -> Result<(), InterfaceError> {
+    let interface_len = interface.len();
+    if MAXIMUM_NAME_LENGTH < interface_len {
+        return Err(InterfaceError::ExceedMaximum(interface_len));
+    }
+
+    let mut state = State::FirstElementBegin;
+    for c in interface {
+        let i = Input::try_from(*c)?;
+        state = state.consume(i)?;
+    }
+
+    match state {
+        State::FirstElementBegin => Err(InterfaceError::Empty),
+        State::FirstElement => Err(InterfaceError::Elements),
+        State::ElementBegin => Err(InterfaceError::EndDot),
+        State::Element => Ok(()),
+    }
 }
 
 /// This represents an [interface name].
@@ -22,12 +100,20 @@ pub struct Interface(String);
 /// An enum representing all errors, which can occur during the handling of a [`Interface`].
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum InterfaceError {
-    /// This error occurs, when the given string was not a valid interface name.
-    #[error("Interface contains illegal character: {0}")]
-    Regex(String),
-    /// This error occurs, when the given string has the wrong length.
-    #[error("Interface has the wrong length: {0}")]
-    Length(usize),
+    #[error("Interface element must not begin with a digit")]
+    ElementBeginDigit,
+    #[error("Interface element must not beign with a '.'")]
+    ElementBeginDot,
+    #[error("Interface must not end with '.'")]
+    EndDot,
+    #[error("Interface must not be empty")]
+    Empty,
+    #[error("Interface have to be composed of 2 or more elements")]
+    Elements,
+    #[error("Interface must not exceed the maximum length: {MAXIMUM_NAME_LENGTH} < {0}")]
+    ExceedMaximum(usize),
+    #[error("Interface must only contain '[A-Z][a-z][0-9]_.': {0}")]
+    InvalidChar(u8),
 }
 
 impl From<Interface> for String {
@@ -39,26 +125,18 @@ impl From<Interface> for String {
 impl TryFrom<String> for Interface {
     type Error = InterfaceError;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        let value_len = value.len();
-        if 0 < value_len && value_len <= MAXIMUM_NAME_LENGTH {
-            if INTERFACE_REGEX.is_match(&value) {
-                Ok(Interface(value))
-            } else {
-                Err(InterfaceError::Regex(value))
-            }
-        } else {
-            Err(InterfaceError::Length(value_len))
-        }
+    fn try_from(interface: String) -> Result<Self, Self::Error> {
+        check(interface.as_bytes())?;
+        Ok(Interface(interface))
     }
 }
 
 impl TryFrom<&str> for Interface {
     type Error = InterfaceError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let value = value.to_string();
-        Interface::try_from(value)
+    fn try_from(interface: &str) -> Result<Self, Self::Error> {
+        check(interface.as_bytes())?;
+        Ok(Interface(interface.to_owned()))
     }
 }
 

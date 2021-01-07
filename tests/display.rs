@@ -4,8 +4,8 @@ use std::string::ToString;
 
 #[test]
 fn bus() {
-    let bus = Bus::try_from(":1000").unwrap();
-    assert_eq!(&bus.to_string(), ":1000");
+    let bus = Bus::try_from(":1.1000").unwrap();
+    assert_eq!(&bus.to_string(), ":1.1000");
 }
 
 #[test]

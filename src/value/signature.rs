@@ -9,7 +9,7 @@ pub const MAXIMUM_SIGNATURE_LENGTH: usize = 255;
 /// An enum representing all errors, which can occur during the handling of a [`Signature`].
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum SignatureError {
-    #[error("Signature contians a invalid: {0}")]
+    #[error("Signature contians an invalid char: {0}")]
     InvalidChar(u8),
     #[error("Array depth is too big: {MAXIMUM_ARRAY_DEPTH} < {0}")]
     ArrayDepth(u8),
