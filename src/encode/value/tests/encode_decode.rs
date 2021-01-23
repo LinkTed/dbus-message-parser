@@ -1,8 +1,7 @@
 use crate::decode::Decoder;
 use crate::encode::Encoder;
-use crate::value::Value;
+use crate::value::{Array, Type, Value};
 use std::cmp::Ordering;
-use std::convert::TryInto;
 
 fn encode_decode(value_1: &Value, is_le: bool) {
     let mut encoder = Encoder::new();
@@ -10,8 +9,8 @@ fn encode_decode(value_1: &Value, is_le: bool) {
 
     let bytes = encoder.buf.freeze();
     let mut decoder = Decoder::new(bytes);
-    let signature = value_1.get_signature().unwrap();
-    let value_2 = decoder.value(is_le, 0, &signature).unwrap();
+    let type_ = value_1.get_type().unwrap();
+    let value_2 = decoder.value(is_le, 0, &[type_]).unwrap();
 
     if let Some(ordering) = value_1.partial_cmp(&value_2[0]) {
         match ordering {
@@ -28,10 +27,15 @@ fn encode_decode(value_1: &Value, is_le: bool) {
 
 #[test]
 fn array() {
-    let array_signature = "{s(bgav)}".try_into().unwrap();
-    let non_empty_variant = Value::Variant(Box::new(Value::Array(Vec::new(), array_signature)));
-    let variant_signature = "v".try_into().unwrap();
-    let array = Value::Array(vec![non_empty_variant], variant_signature);
+    let array_type = Type::from_string_to_signature("{s(bgav)}")
+        .unwrap()
+        .pop()
+        .unwrap();
+    let array = Array::new(Vec::new(), array_type).unwrap();
+    let non_empty_variant = Value::Variant(Box::new(Value::Array(array)));
+    let variant_signature = Type::Variant;
+    let array = Array::new(vec![non_empty_variant], variant_signature).unwrap();
+    let array = Value::Array(array);
 
     encode_decode(&array, true);
     encode_decode(&array, false);

@@ -1,8 +1,8 @@
 use crate::encode::{EncodeError, EncodeResult, Encoder};
 use crate::message::Message;
+use crate::value::Type;
 use bytes::BytesMut;
 use cfg_if::cfg_if;
-use std::convert::TryInto;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
@@ -14,8 +14,7 @@ impl Encoder {
         let mut encoder = Encoder::new();
         let mut body_signature = String::new();
         for v in &message.body {
-            v.get_signature_as_string(&mut body_signature);
-            // TODO sec check
+            v.to_signature_string(&mut body_signature, 0, 0, 0)?;
             encoder.value(v, is_le)?;
         }
 
@@ -31,13 +30,13 @@ impl Encoder {
             if body_signature.is_empty() {
                 self.message_header(&message.header, None)?;
             } else {
-                let body_signature = body_signature.try_into()?;
+                let body_signature = Type::from_string_to_signature(&body_signature)?;
                 return Err(EncodeError::BodyLengthZero(body_signature));
             }
         } else if body_signature.is_empty() {
             return Err(EncodeError::BodySignatureMissing(body_length));
         } else {
-            let body_signature = body_signature.try_into()?;
+            let body_signature = Type::from_string_to_signature(&body_signature)?;
             let body = Some((body_length, body_signature));
             self.message_header(&message.header, body)?;
         }

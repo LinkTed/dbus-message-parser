@@ -1,5 +1,6 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder, MAXIMUM_VARIANT_DEPTH};
-use crate::value::{Signature, Value, MAXIMUM_ARRAY_LENGTH};
+use crate::value::{Array, Type, Value, MAXIMUM_ARRAY_LENGTH};
+use std::slice::from_ref;
 
 impl<'a> Decoder<'a> {
     /// Decode from a byte array at a specific offset to a [`Value::Variant`].
@@ -12,12 +13,12 @@ impl<'a> Decoder<'a> {
         }
 
         let signature = self.d_signature()?;
-        let mut v = self.value(is_le, variant_depth, &signature)?;
-        if v.len() == 1 {
+        if signature.len() == 1 {
+            let mut v = self.value(is_le, variant_depth, &signature)?;
             let v = v.pop().unwrap();
             Ok(Value::Variant(Box::new(v)))
         } else {
-            Err(DecodeError::VariantSingleValue(v))
+            Err(DecodeError::VariantSingleValue(signature))
         }
     }
 
@@ -26,28 +27,20 @@ impl<'a> Decoder<'a> {
         &mut self,
         is_le: bool,
         variant_depth: u8,
-        signature: &Signature,
+        type_: &Type,
     ) -> DecodeResult<Vec<Value>> {
         let array_size = self.u_32(is_le)?;
         if MAXIMUM_ARRAY_LENGTH < array_size as usize {
             return Err(DecodeError::ArrayTooBig(array_size));
         }
 
-        match signature.get_type() {
-            Some(t) => self.algin(t.get_alignment())?,
-            None => return Err(DecodeError::ArraySignatureEmpty),
-        }
-
+        self.algin(type_.get_alignment())?;
+        let type_ = from_ref(type_);
         let mut r = Vec::new();
-
         let end = Decoder::<'a>::checked_add(self.offset, array_size as usize)?;
         while self.offset < end {
-            let mut v = self.value(is_le, variant_depth, signature)?;
-            if v.len() == 1 {
-                r.push(v.pop().unwrap());
-            } else {
-                return Err(DecodeError::ArraySingleValue(v));
-            }
+            let mut v = self.value(is_le, variant_depth, type_)?;
+            r.push(v.pop().unwrap());
         }
 
         if self.offset == end {
@@ -60,14 +53,13 @@ impl<'a> Decoder<'a> {
     /// Decode from a byte array at a specific offset to a [`Value::Array`].
     ///
     /// [`Value::Array`]: crate::value::Value::Array
-    pub fn array(
-        &mut self,
-        is_le: bool,
-        variant_depth: u8,
-        signature: &Signature,
-    ) -> DecodeResult<Value> {
-        let vec = self.d_array(is_le, variant_depth, signature)?;
-        Ok(Value::Array(vec, signature.to_owned()))
+    pub fn array(&mut self, is_le: bool, variant_depth: u8, type_: &Type) -> DecodeResult<Value> {
+        let array = self.d_array(is_le, variant_depth, type_)?;
+        let array = Array {
+            array,
+            type_: type_.clone(),
+        };
+        Ok(Value::Array(array))
     }
 
     /// Decode from a byte array at a specific offset to a [`Value::Struct`].
@@ -77,7 +69,7 @@ impl<'a> Decoder<'a> {
         &mut self,
         is_le: bool,
         variant_depth: u8,
-        signature: &Signature,
+        signature: &[Type],
     ) -> DecodeResult<Value> {
         self.algin(8)?;
         let v = self.value(is_le, variant_depth, signature)?;
@@ -91,23 +83,18 @@ impl<'a> Decoder<'a> {
         &mut self,
         is_le: bool,
         variant_depth: u8,
-        signature_key: &Signature,
-        signature_value: &Signature,
+        key_type: &Type,
+        value_type: &Type,
     ) -> DecodeResult<Value> {
         self.algin(8)?;
-        let mut v = self.value(is_le, variant_depth, signature_key)?;
-        let k = if v.len() == 1 {
-            v.pop().unwrap()
-        } else {
-            return Err(DecodeError::DictKeySingleValue(v));
-        };
 
-        let mut v = self.value(is_le, variant_depth, signature_value)?;
-        let v = if v.len() == 1 {
-            v.pop().unwrap()
-        } else {
-            return Err(DecodeError::DictValueSingleValue(v));
-        };
+        let key_type = from_ref(key_type);
+        let mut v = self.value(is_le, variant_depth, key_type)?;
+        let k = v.pop().unwrap();
+
+        let value_type = from_ref(value_type);
+        let mut v = self.value(is_le, variant_depth, value_type)?;
+        let v = v.pop().unwrap();
 
         Ok(Value::DictEntry(Box::new((k, v))))
     }

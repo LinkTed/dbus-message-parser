@@ -1,7 +1,6 @@
 use crate::encode::{EncodeResult, Encoder};
-use crate::value::{ObjectPath, Signature, SignatureError};
+use crate::value::{ObjectPath, Type};
 use bytes::BufMut;
-use std::convert::TryFrom;
 use std::mem::size_of;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
@@ -153,17 +152,13 @@ impl Encoder {
     }
 
     /// Encode a `&Signature` into the buffer and use 1 bytes.
-    pub fn signature(&mut self, signature: &Signature) -> EncodeResult<()> {
-        let sig = signature.as_ref();
-        let sig_len = sig.len();
-        let b = match u8::try_from(sig_len) {
-            Ok(b) => b,
-            Err(_) => return Err(SignatureError::TooBig(sig_len).into()),
-        };
+    pub fn signature(&mut self, signature: &[Type]) -> EncodeResult<()> {
+        let signature_string = Type::from_signature_to_string(signature)?;
+        let signature_len = signature_string.len();
 
-        self.byte(b);
-        self.buf.reserve(sig_len + 1);
-        self.buf.put(sig.as_bytes());
+        self.byte(signature_len as u8);
+        self.buf.reserve(signature_len + 1);
+        self.buf.put(signature_string.as_bytes());
         self.buf.put_u8(0);
 
         Ok(())

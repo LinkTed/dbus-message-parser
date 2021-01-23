@@ -1,6 +1,6 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder};
 use crate::message::Message;
-use crate::value::{Signature, Value};
+use crate::value::{Type, Value};
 use bytes::Bytes;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
@@ -10,7 +10,7 @@ impl<'a> Decoder<'a> {
         &mut self,
         is_le: bool,
         length: u32,
-        signature: &Signature,
+        signature: &[Type],
     ) -> DecodeResult<Vec<Value>> {
         let end = Decoder::<'a>::checked_add(self.offset, length as usize)?;
         let body = self.value(is_le, 0, signature)?;
@@ -75,12 +75,11 @@ impl Message {
 
 #[test]
 fn message_body_error() {
-    use std::convert::TryFrom;
     let b = Bytes::from_static(b"\xff");
-    let signature = Signature::try_from("y").unwrap();
+    let type_ = Type::Byte;
     let mut decoder = Decoder::new(b);
     assert_eq!(
-        decoder.message_body(true, 2, &signature),
+        decoder.message_body(true, 2, &[type_]),
         Err(DecodeError::BodyLength(2, 1))
     );
 }

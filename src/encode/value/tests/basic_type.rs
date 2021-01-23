@@ -1,5 +1,5 @@
 use crate::encode::Encoder;
-use crate::value::Value;
+use crate::value::{Type, Value};
 use std::convert::TryInto;
 
 macro_rules! init_test {
@@ -230,7 +230,7 @@ fn path_3() {
 
 #[test]
 fn signature() {
-    let b = init_test!(b"", Value::Signature("i".try_into().unwrap()), true);
+    let b = init_test!(b"", Value::Signature(vec![Type::Int32]), true);
     end_test!(b, b"\x01\x69\x00");
 }
 

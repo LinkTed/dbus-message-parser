@@ -1,8 +1,8 @@
 use crate::decode::MAXIMUM_VARIANT_DEPTH;
 use crate::message::{MessageHeaderError, MessageHeaderField, MessageHeaderFieldError};
 use crate::value::{
-    BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, Signature, SignatureError,
-    Value, MAXIMUM_ARRAY_LENGTH,
+    BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, Type, TypeError, Value,
+    MAXIMUM_ARRAY_LENGTH,
 };
 use std::str::Utf8Error;
 use thiserror::Error;
@@ -15,7 +15,7 @@ pub enum DecodeError {
     #[error("Not enough bytes to decode: got {0} offset {1}")]
     NotEnoughBytes(usize, usize),
     #[error("Expected exactly one Value for variant: {0:?}")]
-    VariantSingleValue(Vec<Value>),
+    VariantSingleValue(Vec<Type>),
     #[error("Boolean value only can be 0 or 1: {0}")]
     InvalidBoolean(u32),
     #[error("Could not decode string as UTF-8: {0}")]
@@ -33,7 +33,7 @@ pub enum DecodeError {
     #[error("Could not decode Error: {0}")]
     ErrorError(#[from] ErrorError),
     #[error("Could not decode Signature: {0}")]
-    SignatureError(#[from] SignatureError),
+    SignatureError(#[from] TypeError),
     #[error("Padding is not zero: {0}")]
     Padding(u8),
     #[error("Array length is too big: {MAXIMUM_ARRAY_LENGTH} < {0}")]
@@ -56,8 +56,8 @@ pub enum DecodeError {
     MessageFlags(u8),
     #[error("The MessageHeaderField {0} exists twice in the header")]
     MessageHeaderFieldDouble(MessageHeaderField),
-    #[error("The body length is zero, but there is a body signature '{0}'")]
-    BodyLengthZero(Signature),
+    #[error("The body length is zero, but there is a body signature '{0:?}'")]
+    BodyLengthZero(Vec<Type>),
     #[error("The body signature is missing, but there body length 0 != {0}")]
     BodySignatureMissing(u32),
     #[error("Not enough FDs: got {0} offset {1}")]

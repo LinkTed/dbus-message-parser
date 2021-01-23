@@ -1,6 +1,6 @@
 use crate::value::{
     Bus, BusError, Error, ErrorError, Interface, InterfaceError, Member, MemberError, ObjectPath,
-    Signature, Value,
+    Type, Value,
 };
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter, Result as FmtResult};
@@ -59,7 +59,7 @@ pub enum MessageHeaderField {
     ReplySerial(u32),
     Destination(Bus),
     Sender(Bus),
-    Signature(Signature),
+    Signature(Vec<Type>),
     #[cfg(target_family = "unix")]
     UnixFDs(u32),
 }
@@ -78,7 +78,7 @@ impl Display for MessageHeaderField {
                 write!(f, "destination='{}'", destination)
             }
             MessageHeaderField::Sender(sender) => write!(f, "sender='{}'", sender),
-            MessageHeaderField::Signature(signature) => write!(f, "signature='{}'", signature),
+            MessageHeaderField::Signature(signature) => write!(f, "signature='{:?}'", signature),
             #[cfg(target_family = "unix")]
             MessageHeaderField::UnixFDs(unix_fds) => write!(f, "unix_fds='{}'", unix_fds),
         }

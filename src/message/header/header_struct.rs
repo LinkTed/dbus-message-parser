@@ -1,5 +1,5 @@
 use crate::message::{Message, MessageFlags, MessageHeaderError, MessageHeaderField, MessageType};
-use crate::value::{Bus, Error, Interface, Member, ObjectPath, Signature, Value};
+use crate::value::{Bus, Error, Interface, Member, ObjectPath, Type, Value};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
@@ -195,7 +195,7 @@ impl MessageHeader {
     /// Get the [`Signature`], if there is one in the header field.
     ///
     /// [`Signature`]: crate::message::MessageHeaderField::Signature
-    pub fn get_signature(&self) -> Option<&Signature> {
+    pub fn get_signature(&self) -> Option<&[Type]> {
         get_header!(self, Signature);
     }
 

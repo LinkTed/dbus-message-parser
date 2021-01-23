@@ -1,58 +1,7 @@
 use crate::message::MessageHeaderField;
-use crate::value::{ObjectPath, Signature, SignatureError};
-use std::convert::TryInto;
+use crate::value::{Array, ObjectPath, Type, TypeError};
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
-
-#[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord)]
-pub enum Type {
-    Byte,
-    Boolean,
-    Int16,
-    Uint16,
-    Int32,
-    Uint32,
-    Int64,
-    Uint64,
-    Double,
-    String,
-    ObjectPath,
-    Signature,
-    Array(Signature),
-    Struct(Signature),
-    DictEntry(Signature, Signature),
-    Variant,
-    #[cfg(target_family = "unix")]
-    UnixFD,
-}
-
-impl Type {
-    /// Returns the [alignment] of the [`Type`].
-    ///
-    /// [alignment]: https://dbus.freedesktop.org/doc/dbus-specification.html#idm702
-    pub fn get_alignment(&self) -> usize {
-        match self {
-            Type::Byte => 1,
-            Type::Boolean => 4,
-            Type::Int16 => 2,
-            Type::Uint16 => 2,
-            Type::Int32 => 4,
-            Type::Uint32 => 4,
-            Type::Int64 => 8,
-            Type::Uint64 => 8,
-            Type::Double => 8,
-            Type::String => 4,
-            Type::ObjectPath => 4,
-            Type::Signature => 1,
-            Type::Array(_) => 4,
-            Type::Struct(_) => 8,
-            Type::DictEntry(_, _) => 8,
-            Type::Variant => 1,
-            #[cfg(target_family = "unix")]
-            Type::UnixFD => 4,
-        }
-    }
-}
 
 /// An enum representing a [DBus value].
 ///
@@ -70,8 +19,8 @@ pub enum Value {
     Double(f64),
     String(String),
     ObjectPath(ObjectPath),
-    Signature(Signature),
-    Array(Vec<Value>, Signature),
+    Signature(Vec<Type>),
+    Array(Array),
     Struct(Vec<Value>),
     DictEntry(Box<(Value, Value)>),
     Variant(Box<Value>),
@@ -81,51 +30,125 @@ pub enum Value {
 
 impl Value {
     /// Write the signature of the `Value` object into the `s` argument.
-    pub(crate) fn get_signature_as_string(&self, s: &mut String) {
+    pub(crate) fn to_signature_string(
+        &self,
+        signature_string: &mut String,
+        array_depth: u8,
+        struct_depth: u8,
+        dict_depth: u8,
+    ) -> Result<(), TypeError> {
+        Type::check_depth(array_depth, struct_depth, dict_depth)?;
         match self {
-            Value::Byte(_) => s.push('y'),
-            Value::Boolean(_) => s.push('b'),
-            Value::Int16(_) => s.push('n'),
-            Value::Uint16(_) => s.push('q'),
-            Value::Int32(_) => s.push('i'),
-            Value::Uint32(_) => s.push('u'),
-            Value::Int64(_) => s.push('x'),
-            Value::Uint64(_) => s.push('t'),
-            Value::Double(_) => s.push('d'),
-            Value::String(_) => s.push('s'),
-            Value::ObjectPath(_) => s.push('o'),
-            Value::Signature(_) => s.push('g'),
-            Value::Array(_, sig) => {
-                s.push('a');
-                s.push_str(sig.as_ref());
+            Value::Byte(_) => signature_string.push('y'),
+            Value::Boolean(_) => signature_string.push('b'),
+            Value::Int16(_) => signature_string.push('n'),
+            Value::Uint16(_) => signature_string.push('q'),
+            Value::Int32(_) => signature_string.push('i'),
+            Value::Uint32(_) => signature_string.push('u'),
+            Value::Int64(_) => signature_string.push('x'),
+            Value::Uint64(_) => signature_string.push('t'),
+            Value::Double(_) => signature_string.push('d'),
+            Value::String(_) => signature_string.push('s'),
+            Value::ObjectPath(_) => signature_string.push('o'),
+            Value::Signature(_) => signature_string.push('g'),
+            Value::Array(array) => {
+                signature_string.push('a');
+                array.get_type().try_to_string(
+                    signature_string,
+                    array_depth + 1,
+                    struct_depth,
+                    dict_depth,
+                )?;
             }
             Value::Struct(vec) => {
-                s.push('(');
+                signature_string.push('(');
                 for v in vec {
-                    v.get_signature_as_string(s);
+                    v.to_signature_string(
+                        signature_string,
+                        array_depth,
+                        struct_depth + 1,
+                        dict_depth,
+                    )?;
                 }
-                s.push(')');
+                signature_string.push(')');
             }
             Value::DictEntry(b) => {
-                s.push('{');
+                signature_string.push('{');
                 let (key, value) = &**b;
-                key.get_signature_as_string(s);
-                value.get_signature_as_string(s);
-                s.push('}');
+                key.to_signature_string(
+                    signature_string,
+                    array_depth,
+                    struct_depth,
+                    dict_depth + 1,
+                )?;
+                value.to_signature_string(
+                    signature_string,
+                    array_depth,
+                    struct_depth,
+                    dict_depth + 1,
+                )?;
+                signature_string.push('}');
             }
-            Value::Variant(_) => s.push('v'),
+            Value::Variant(_) => signature_string.push('v'),
             #[cfg(target_family = "unix")]
-            Value::UnixFD(_) => s.push('h'),
+            Value::UnixFD(_) => signature_string.push('h'),
+        }
+        Type::check_len(signature_string)?;
+        Ok(())
+    }
+
+    fn from_value_to_type(
+        &self,
+        array_depth: u8,
+        struct_depth: u8,
+        dict_depth: u8,
+    ) -> Result<Type, TypeError> {
+        Type::check_depth(array_depth, struct_depth, dict_depth)?;
+        match self {
+            Value::Byte(_) => Ok(Type::Byte),
+            Value::Boolean(_) => Ok(Type::Boolean),
+            Value::Int16(_) => Ok(Type::Int16),
+            Value::Uint16(_) => Ok(Type::Uint16),
+            Value::Int32(_) => Ok(Type::Int32),
+            Value::Uint32(_) => Ok(Type::Uint32),
+            Value::Int64(_) => Ok(Type::Int64),
+            Value::Uint64(_) => Ok(Type::Uint64),
+            #[cfg(target_family = "unix")]
+            Value::UnixFD(_) => Ok(Type::UnixFD),
+            Value::Double(_) => Ok(Type::Double),
+            Value::String(_) => Ok(Type::String),
+            Value::ObjectPath(_) => Ok(Type::ObjectPath),
+            Value::Signature(_) => Ok(Type::Signature),
+            Value::Array(array) => {
+                let signature = Box::new(array.get_type().clone());
+                Ok(Type::Array(signature))
+            }
+            Value::Struct(values) => {
+                let mut signatures = Vec::new();
+                for value in values {
+                    let signature =
+                        value.from_value_to_type(array_depth, struct_depth + 1, dict_depth)?;
+                    signatures.push(signature);
+                }
+                Ok(Type::Struct(signatures))
+            }
+            Value::DictEntry(b) => {
+                let key_signature =
+                    b.0.from_value_to_type(array_depth, struct_depth, dict_depth + 1)?;
+                let value_signature =
+                    b.1.from_value_to_type(array_depth, struct_depth, dict_depth + 1)?;
+                let signature = Box::new((key_signature, value_signature));
+                Ok(Type::DictEntry(signature))
+            }
+            Value::Variant(_) => Ok(Type::Variant),
         }
     }
 
-    /// Returns the [`Signature`] of the `Value`.
+    /// Returns the [`Type`] of the `Value`.
     ///
-    /// [`Signature`]: crate::value::Signature
-    pub fn get_signature(&self) -> Result<Signature, SignatureError> {
-        let mut signature = String::new();
-        self.get_signature_as_string(&mut signature);
-        signature.try_into()
+    /// [`Type`]: crate::value::Type
+    pub fn get_type(&self) -> Result<Type, TypeError> {
+        self.from_value_to_type(0, 0, 0)
     }
 }
 

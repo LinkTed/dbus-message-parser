@@ -1,19 +1,19 @@
 use crate::encode::{EncodeResult, Encoder};
 use crate::message::{MessageHeader, MessageHeaderField};
-use crate::value::{Signature, Value};
+use crate::value::{Array, Type, Value};
 use cfg_if::cfg_if;
 use lazy_static::lazy_static;
 use std::convert::TryInto;
 
 lazy_static! {
-    static ref ARRAY_SIGNATURE: Signature = "(yv)".try_into().unwrap();
+    static ref ARRAY_TYPE: Type = "(yv)".try_into().unwrap();
 }
 
 impl Encoder {
     pub fn message_header(
         &mut self,
         message_header: &MessageHeader,
-        body: Option<(u32, Signature)>,
+        body: Option<(u32, Vec<Type>)>,
     ) -> EncodeResult<()> {
         let is_le = message_header.is_le;
 
@@ -52,7 +52,11 @@ impl Encoder {
 
         // Encode the header fields.
         let headers: Vec<Value> = fields.into_iter().map(Value::from).collect();
-        self.array(&headers, &ARRAY_SIGNATURE, is_le)?;
+        let headers = Array {
+            array: headers,
+            type_: ARRAY_TYPE.clone(),
+        };
+        self.array(&headers, is_le)?;
 
         Ok(())
     }

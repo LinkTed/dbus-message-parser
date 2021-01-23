@@ -1,5 +1,5 @@
 use dbus_message_parser::message::{MessageHeaderField, MessageHeaderFieldError};
-use dbus_message_parser::value::{BusError, ErrorError, InterfaceError, MemberError, Value};
+use dbus_message_parser::value::{BusError, ErrorError, InterfaceError, MemberError, Type, Value};
 use std::convert::{TryFrom, TryInto};
 
 #[test]
@@ -350,11 +350,11 @@ fn sender_error_3() {
 
 #[test]
 fn signature() {
-    let variant = Value::Variant(Box::new(Value::Signature("i".try_into().unwrap())));
+    let variant = Value::Variant(Box::new(Value::Signature(vec![Type::Int32])));
     let value = Value::Struct(vec![Value::Byte(8), variant]);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Ok(MessageHeaderField::Signature("i".try_into().unwrap()))
+        Ok(MessageHeaderField::Signature(vec![Type::Int32]))
     );
 }
 

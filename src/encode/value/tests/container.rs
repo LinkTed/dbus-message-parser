@@ -1,20 +1,14 @@
-use crate::encode::{EncodeError, Encoder};
-use crate::value::Value;
-use std::convert::TryInto;
+use crate::value::{Array, ArrayError, Type, Value};
 
 #[test]
 fn array_signature_mismatch() {
     let int_32 = Value::Int32(10);
     let int_16 = Value::Int16(10);
-    let vec = vec![int_32, int_16];
-    let sig = "i".try_into().unwrap();
+    let array = vec![int_32, int_16];
+    let type_ = Type::Int32;
 
-    let mut encoder = Encoder::new();
     assert_eq!(
-        encoder.array(&vec, &sig, true),
-        Err(EncodeError::ArraySignatureMismatch(
-            "i".try_into().unwrap(),
-            "n".try_into().unwrap(),
-        )),
+        Array::new(array, type_),
+        Err(ArrayError::TypeMismatch(Type::Int32, Type::Int16,)),
     );
 }

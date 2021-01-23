@@ -1,5 +1,5 @@
 use dbus_message_parser::message::{Message, MessageType};
-use dbus_message_parser::value::{ObjectPath, Value};
+use dbus_message_parser::value::{ObjectPath, Type, Value};
 use std::convert::TryInto;
 
 fn create_method_call() -> Message {
@@ -146,13 +146,13 @@ fn get_destination_none() {
 fn get_signature() {
     let mut msg = create_method_call();
     msg.add_value(Value::Uint32(0));
-    assert_eq!(msg.get_signature(), Some(Ok("u".try_into().unwrap())));
+    assert_eq!(msg.get_signature(), Ok(vec![Type::Uint32]));
 }
 
 #[test]
 fn get_signature_empty() {
     let msg = create_method_call();
-    assert_eq!(msg.get_signature(), None);
+    assert_eq!(msg.get_signature(), Ok(Vec::new()));
 }
 
 #[test]
@@ -173,8 +173,8 @@ fn split() {
     let mut msg = create_method_call();
     msg.add_value(Value::Uint32(0));
     let (header, body) = msg.split().unwrap();
-    let signature = "u".try_into().unwrap();
-    assert_eq!(header.get_signature(), Some(&signature));
+    let type_ = Type::Uint32;
+    assert_eq!(header.get_signature(), Some(&[type_][..]));
     assert_eq!(body, &[Value::Uint32(0)][..]);
 }
 

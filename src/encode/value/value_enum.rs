@@ -50,7 +50,7 @@ impl Encoder {
                 Ok(())
             }
             Value::Signature(s) => self.signature(s),
-            Value::Array(vec, sig) => self.array(vec, sig, is_le),
+            Value::Array(array) => self.array(array, is_le),
             Value::Struct(vec) => self.encode_struct(vec, is_le),
             Value::DictEntry(b) => self.dict_entry(b, is_le),
             Value::Variant(v) => self.variant(v, is_le),

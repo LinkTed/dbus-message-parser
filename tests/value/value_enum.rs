@@ -1,5 +1,4 @@
-use dbus_message_parser::value::{Signature, Type};
-use std::convert::TryFrom;
+use dbus_message_parser::value::Type;
 
 #[test]
 fn byte_alignment() {
@@ -75,23 +74,23 @@ fn signature_alignment() {
 
 #[test]
 fn array_alignment() {
-    let signature = Signature::try_from("i").unwrap();
-    let type_ = Type::Array(signature);
+    let signature = Type::Int32;
+    let type_ = Type::Array(Box::new(signature));
     assert_eq!(type_.get_alignment(), 4);
 }
 
 #[test]
 fn struct_alignment() {
-    let signature = Signature::try_from("i").unwrap();
-    let type_ = Type::Struct(signature);
+    let signature = Type::Int32;
+    let type_ = Type::Struct(vec![signature]);
     assert_eq!(type_.get_alignment(), 8);
 }
 
 #[test]
 fn dict_entry_alignment() {
-    let signature_key = Signature::try_from("i").unwrap();
-    let signature_value = Signature::try_from("s").unwrap();
-    let type_ = Type::DictEntry(signature_key, signature_value);
+    let signature_key = Type::Int32;
+    let signature_value = Type::String;
+    let type_ = Type::DictEntry(Box::new((signature_key, signature_value)));
     assert_eq!(type_.get_alignment(), 8);
 }
 

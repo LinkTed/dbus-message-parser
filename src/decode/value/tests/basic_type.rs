@@ -1,11 +1,11 @@
 use crate::decode::{DecodeError, Decoder};
-use crate::value::{Signature, Value};
+use crate::value::{Type, Value};
 use bytes::Bytes;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryInto;
 
 macro_rules! init_test {
     ($array:tt, $le:expr, $sig:expr) => {{
-        let sig = Signature::try_from($sig).unwrap();
+        let sig = Type::from_string_to_signature($sig).unwrap();
         let b = Bytes::from_static(&$array[..]);
         let mut decoder = Decoder::new(b);
         let mut v = decoder.value($le, 0, &sig).unwrap();
@@ -13,7 +13,7 @@ macro_rules! init_test {
         v.pop().unwrap()
     }};
     ($array:tt, $offset:expr, $le:expr, $sig:expr) => {{
-        let sig = Signature::try_from($sig).unwrap();
+        let sig = Type::from_string_to_signature($sig).unwrap();
         let b = Bytes::from_static(&$array[..]);
         let mut decoder = Decoder::new(b);
         decoder.offset = $offset;
@@ -25,7 +25,7 @@ macro_rules! init_test {
 
 macro_rules! init_error_test {
     ($array:tt, $sig:expr) => {{
-        let sig = Signature::try_from($sig).unwrap();
+        let sig = Type::from_string_to_signature($sig).unwrap();
         let b = Bytes::from_static(&$array[..]);
         let mut decoder = Decoder::new(b);
         decoder.value(true, 0, &sig)
@@ -127,9 +127,9 @@ fn uint_16_3() {
 fn unix_fd() {
     let b = Bytes::from_static(&b"\x00\x00\x00\x00"[..]);
     let fds = [2];
-    let sig = Signature::try_from("h").unwrap();
+    let type_ = Type::UnixFD;
     let mut decoder = Decoder::new_with_fds(b, &fds[..]);
-    let mut v = decoder.value(true, 0, &sig).unwrap();
+    let mut v = decoder.value(true, 0, &[type_]).unwrap();
     assert_eq!(v.len(), 1);
     let v = v.pop().unwrap();
     assert_eq!(v, Value::UnixFD(2));
@@ -140,9 +140,9 @@ fn unix_fd() {
 fn unix_fd_error() {
     let b = Bytes::from_static(&b"\x01\x00\x00\x00"[..]);
     let fds = [2];
-    let sig = Signature::try_from("h").unwrap();
+    let type_ = Type::UnixFD;
     let mut decoder = Decoder::new_with_fds(b, &fds[..]);
-    let v = decoder.value(true, 0, &sig);
+    let v = decoder.value(true, 0, &[type_]);
     assert_eq!(v, Err(DecodeError::NotEnoughFds(1, 1)));
 }
 
@@ -354,8 +354,8 @@ fn path_3() {
 #[test]
 fn signature() {
     let v = init_test!(b"\x01\x69\x00", true, "g");
-    let s = Signature::try_from("i").unwrap();
-    assert_eq!(v, Value::Signature(s));
+    let t = Type::Int32;
+    assert_eq!(v, Value::Signature(vec![t]));
 }
 
 #[test]

@@ -1,9 +1,9 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder};
-use crate::value::{ObjectPath, Signature, Value};
+use crate::value::{ObjectPath, Type, Value};
 use bytes::Buf;
 #[cfg(target_family = "unix")]
 use std::cmp::max;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use std::mem::size_of;
 use std::str::from_utf8;
 
@@ -202,10 +202,10 @@ impl<'a> Decoder<'a> {
     /// The size of the length is 1.
     ///
     /// [`Signature`]: crate::value::Signature
-    pub(crate) fn d_signature(&mut self) -> DecodeResult<Signature> {
+    pub(crate) fn d_signature(&mut self) -> DecodeResult<Vec<Type>> {
         let signature_length = self.b()? as usize;
         let signature = self.d_string(signature_length)?;
-        let signature = signature.try_into()?;
+        let signature = Type::from_string_to_signature(&signature)?;
         Ok(signature)
     }
 

@@ -1,6 +1,6 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder};
 use crate::message::{MessageFlags, MessageHeader, MessageHeaderField, MessageType};
-use crate::value::Signature;
+use crate::value::Type;
 #[cfg(test)]
 use bytes::Bytes;
 use std::collections::BTreeSet;
@@ -26,8 +26,8 @@ impl<'a> Decoder<'a> {
     fn message_header_fields(
         &mut self,
         is_le: bool,
-    ) -> DecodeResult<(Option<Signature>, BTreeSet<MessageHeaderField>)> {
-        let signature = Signature::try_from("(yv)").unwrap();
+    ) -> DecodeResult<(Option<Vec<Type>>, BTreeSet<MessageHeaderField>)> {
+        let signature = Type::Struct(vec![Type::Byte, Type::Variant]);
         let array = self.d_array(is_le, 0, &signature)?;
         let mut body_signature = None;
         let mut headers = BTreeSet::new();
@@ -50,7 +50,7 @@ impl<'a> Decoder<'a> {
         }
     }
 
-    pub fn message_header(&mut self) -> DecodeResult<(MessageHeader, Option<(u32, Signature)>)> {
+    pub fn message_header(&mut self) -> DecodeResult<(MessageHeader, Option<(u32, Vec<Type>)>)> {
         let is_le = self.message_header_is_le()?;
 
         // Get the message type.

@@ -1,29 +1,19 @@
 use crate::encode::{EncodeError, EncodeResult, Encoder};
-use crate::value::{Signature, Value, MAXIMUM_ARRAY_LENGTH};
+use crate::value::{Array, Value, MAXIMUM_ARRAY_LENGTH};
+use std::slice::from_ref;
 
 impl Encoder {
     /// Apply the alignment and encode a `&[Value]` as an array into the buffer.
-    pub fn array(&mut self, vec: &[Value], signature: &Signature, is_le: bool) -> EncodeResult<()> {
+    pub fn array(&mut self, array: &Array, is_le: bool) -> EncodeResult<()> {
         self.algin(4);
         let array_len_offset = self.buf.len();
         self.u_32(0, is_le);
 
-        match signature.get_type() {
-            Some(t) => self.algin(t.get_alignment()),
-            None => return Err(EncodeError::ArraySignatureEmpty),
-        }
-
+        self.algin(array.get_type().get_alignment());
         let array_len_offset_algin = self.buf.len();
 
-        for v in vec {
-            let signature_v = v.get_signature()?;
-            if signature != &signature_v {
-                return Err(EncodeError::ArraySignatureMismatch(
-                    signature.to_owned(),
-                    signature_v,
-                ));
-            }
-            self.value(v, is_le)?;
+        for value in array.as_ref() {
+            self.value(value, is_le)?;
         }
 
         let array_len = self.buf.len() - array_len_offset_algin;
@@ -56,8 +46,9 @@ impl Encoder {
 
     /// Encode a `&[Value]` as a variant into the buffer.
     pub fn variant(&mut self, variant: &Value, is_le: bool) -> EncodeResult<()> {
-        let signature = variant.get_signature()?;
-        self.signature(&signature)?;
+        let type_ = variant.get_type()?;
+        let signature = from_ref(&type_);
+        self.signature(signature)?;
         self.value(variant, is_le)
     }
 }

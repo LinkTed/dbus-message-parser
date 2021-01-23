@@ -1,4 +1,4 @@
-use dbus_message_parser::value::{Bus, Error, Interface, Member, ObjectPath, Signature};
+use dbus_message_parser::value::{Bus, Error, Interface, Member, ObjectPath, Type};
 use std::convert::TryFrom;
 use std::string::ToString;
 
@@ -34,6 +34,6 @@ fn object_path() {
 
 #[test]
 fn signature() {
-    let signature = Signature::try_from("aii").unwrap();
-    assert_eq!(&signature.to_string(), "aii");
+    let signature = Type::try_from("aai").unwrap();
+    assert_eq!(&signature.to_string(), "aai");
 }

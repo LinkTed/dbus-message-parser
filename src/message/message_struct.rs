@@ -1,5 +1,5 @@
 use crate::message::{MessageFlags, MessageHeader, MessageHeaderField, MessageType};
-use crate::value::{Bus, Error, Interface, Member, ObjectPath, Signature, SignatureError, Value};
+use crate::value::{Bus, Error, Interface, Member, ObjectPath, Type, TypeError, Value};
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 
@@ -220,16 +220,14 @@ impl Message {
     /// Get the [`Signature`], if there is one in the header field.
     ///
     /// [`Signature`]: crate::message::MessageHeaderField::Signature
-    pub fn get_signature(&self) -> Option<Result<Signature, SignatureError>> {
-        let mut signature = String::new();
-        for v in &self.body {
-            v.get_signature_as_string(&mut signature);
+    pub fn get_signature(&self) -> Result<Vec<Type>, TypeError> {
+        let mut signature = Vec::new();
+        for value in &self.body {
+            let type_ = value.get_type()?;
+            signature.push(type_);
         }
-        if signature.is_empty() {
-            None
-        } else {
-            Some(signature.try_into())
-        }
+
+        Ok(signature)
     }
 
     /// Get the [`UnixFDs`], if there is one in the header field.
@@ -305,10 +303,9 @@ impl Message {
     }
 
     /// Split the [`Message`] object into the header and the body.
-    pub fn split(mut self) -> Result<(MessageHeader, Vec<Value>), SignatureError> {
-        let signature = self.get_signature();
-        if let Some(signature) = signature {
-            let signature = signature?;
+    pub fn split(mut self) -> Result<(MessageHeader, Vec<Value>), TypeError> {
+        let signature = self.get_signature()?;
+        if !signature.is_empty() {
             self.header
                 .fields
                 .insert(MessageHeaderField::Signature(signature));
