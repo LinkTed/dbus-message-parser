@@ -44,7 +44,7 @@ fn check(member: &[u8]) -> Result<(), MemberError> {
         None => return Err(MemberError::Empty),
     }
 
-    while let Some(c) = member_iter.next() {
+    for c in member_iter {
         Input::try_from(*c)?;
     }
     Ok(())

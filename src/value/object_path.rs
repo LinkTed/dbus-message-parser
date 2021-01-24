@@ -47,11 +47,11 @@ impl State {
             },
             State::Root => match i {
                 Input::AlphanumericAndUnderscore => Ok(State::Element),
-                Input::Slash => return Err(ObjectPathError::ElementEmtpy),
+                Input::Slash => Err(ObjectPathError::ElementEmtpy),
             },
             State::ElementBegin => match i {
                 Input::AlphanumericAndUnderscore => Ok(State::Element),
-                Input::Slash => return Err(ObjectPathError::ElementEmtpy),
+                Input::Slash => Err(ObjectPathError::ElementEmtpy),
             },
             State::Element => match i {
                 Input::AlphanumericAndUnderscore => Ok(State::Element),

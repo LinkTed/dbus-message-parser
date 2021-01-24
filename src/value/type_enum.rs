@@ -37,8 +37,8 @@ fn get_char_at(bytes: &[u8], offset: usize) -> Result<u8, TypeError> {
 }
 
 /// Get the next type from a `&str`.
-fn next_type<'a>(
-    type_string: &'a [u8],
+fn next_type(
+    type_string: &[u8],
     type_string_offset: &mut usize,
     array_depth: u8,
     struct_depth: u8,
