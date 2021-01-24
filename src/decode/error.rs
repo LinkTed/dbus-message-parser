@@ -2,7 +2,7 @@ use crate::decode::MAXIMUM_VARIANT_DEPTH;
 use crate::message::{MessageHeaderError, MessageHeaderField, MessageHeaderFieldError};
 use crate::value::{
     BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, StructError, Type,
-    TypeError, Value, MAXIMUM_ARRAY_LENGTH,
+    TypeError, MAXIMUM_ARRAY_LENGTH,
 };
 use std::str::Utf8Error;
 use thiserror::Error;
@@ -42,14 +42,6 @@ pub enum DecodeError {
     ArrayTooBig(u32),
     #[error("Array is invalid: got {0} excepted {1}")]
     ArrayInvalidLength(usize, usize),
-    #[error("Expected exactly one Value for an array element: {0:?}")]
-    ArraySingleValue(Vec<Value>),
-    #[error("Cannot decode array, because an empty signature is given")]
-    ArraySignatureEmpty,
-    #[error("Expected exactly one Value for the key: {0:?}")]
-    DictKeySingleValue(Vec<Value>),
-    #[error("Expected exactly one Value for the value: {0:?}")]
-    DictValueSingleValue(Vec<Value>),
     #[error("Could not decode the endianness: {0}")]
     Endianness(u8),
     #[error("Could not decode MessageType: {0}")]
@@ -74,6 +66,4 @@ pub enum DecodeError {
     IntegerOverflow(usize, usize),
     #[error("Variant depth is too big: {MAXIMUM_VARIANT_DEPTH} < {0}")]
     VariantDepth(u8),
-    #[error("Cannot decode value, because an empty signature is given")]
-    SignatureEmpty,
 }
