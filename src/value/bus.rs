@@ -191,6 +191,18 @@ impl TryFrom<&str> for Bus {
     }
 }
 
+impl TryFrom<&[u8]> for Bus {
+    type Error = BusError;
+
+    fn try_from(bus: &[u8]) -> Result<Self, Self::Error> {
+        check(bus)?;
+        let bus = bus.to_vec();
+        //  The vector only contains valid UTF-8 (ASCII) characters because it was already
+        //  checked by the `check` function above
+        unsafe { Ok(Bus(String::from_utf8_unchecked(bus))) }
+    }
+}
+
 impl Display for Bus {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.0)

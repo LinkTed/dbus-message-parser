@@ -124,6 +124,18 @@ impl TryFrom<&str> for ObjectPath {
     }
 }
 
+impl TryFrom<&[u8]> for ObjectPath {
+    type Error = ObjectPathError;
+
+    fn try_from(object_path: &[u8]) -> Result<Self, Self::Error> {
+        check(object_path)?;
+        let object_path = object_path.to_vec();
+        //  The vector only contains valid UTF-8 (ASCII) characters because it was already
+        //  checked by the `check` function above
+        unsafe { Ok(ObjectPath(String::from_utf8_unchecked(object_path))) }
+    }
+}
+
 impl Display for ObjectPath {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.0)

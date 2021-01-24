@@ -187,6 +187,10 @@ impl Type {
     }
 
     pub fn from_string_to_signature(signature_string: &str) -> Result<Vec<Type>, TypeError> {
+        Type::from_bytes_to_signature(signature_string.as_bytes())
+    }
+
+    pub fn from_bytes_to_signature(signature_string: &[u8]) -> Result<Vec<Type>, TypeError> {
         let signature_string_len = signature_string.len();
         if MAXIMUM_SIGNATURE_LENGTH < signature_string_len {
             return Err(TypeError::ExceedMaximum(signature_string_len));
@@ -195,13 +199,7 @@ impl Type {
         let mut signature = Vec::new();
         let mut signature_string_offset = 0;
         while signature_string_offset < signature_string_len {
-            let type_ = next_type(
-                signature_string.as_bytes(),
-                &mut signature_string_offset,
-                0,
-                0,
-                0,
-            )?;
+            let type_ = next_type(signature_string, &mut signature_string_offset, 0, 0, 0)?;
             signature.push(type_);
         }
 

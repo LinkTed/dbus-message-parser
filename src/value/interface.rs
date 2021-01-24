@@ -140,6 +140,18 @@ impl TryFrom<&str> for Interface {
     }
 }
 
+impl TryFrom<&[u8]> for Interface {
+    type Error = InterfaceError;
+
+    fn try_from(interface: &[u8]) -> Result<Self, Self::Error> {
+        check(interface)?;
+        let interface = interface.to_vec();
+        //  The vector only contains valid UTF-8 (ASCII) characters because it was already
+        //  checked by the `check` function above
+        unsafe { Ok(Interface(String::from_utf8_unchecked(interface))) }
+    }
+}
+
 impl Display for Interface {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.0)

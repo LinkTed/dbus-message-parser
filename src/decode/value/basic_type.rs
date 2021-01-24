@@ -1,6 +1,6 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder};
 use crate::value::{ObjectPath, Type, Value};
-use bytes::Buf;
+use bytes::{Buf, Bytes};
 #[cfg(target_family = "unix")]
 use std::cmp::max;
 use std::convert::TryFrom;
@@ -152,21 +152,15 @@ impl<'a> Decoder<'a> {
         Ok(Value::Double(f))
     }
 
-    /// Computes `self.offset += rhs + 1` and check if there null-terminated string of the length
-    /// of `rhs + 1`.
+    /// Returns n-`length` [`Bytes`] object and check if the next byte is null, because all string have
+    /// to be null terminated.
     ///
-    /// Return a [`DecodeError::OffsetOverflow`] if a overflow occours, else the `String` wihout
-    /// the null.
-    ///
-    /// [`DecodeError::OffsetOverflow`]: dbus_message_parser::DecodeError
+    /// [`Bytes`]: bytes::Bytes
     #[inline]
-    fn d_string(&mut self, rhs: usize) -> DecodeResult<String> {
-        let length = Decoder::<'a>::checked_add(1, rhs)?;
+    fn d_string_bytes(&mut self, length: usize) -> DecodeResult<Bytes> {
         let bytes = self.read(length)?;
-        let string = from_utf8(bytes.as_ref())?;
-        let last = length - 1; // The position of the last char
-        match bytes[last] {
-            0 => Ok(string[..last].to_owned()),
+        match self.b()? {
+            0 => Ok(bytes),
             b => Err(DecodeError::StringNotNull(b)),
         }
     }
@@ -175,17 +169,18 @@ impl<'a> Decoder<'a> {
     /// The size of the length is 4.
     ///
     /// [`String`]: std::string:String
-    fn d_u32_string(&mut self, is_le: bool) -> DecodeResult<String> {
+    fn d_u32_string_bytes(&mut self, is_le: bool) -> DecodeResult<Bytes> {
         let string_length = self.u_32(is_le)? as usize;
-        self.d_string(string_length)
+        self.d_string_bytes(string_length)
     }
 
     /// Check alignment and decode from a byte array at a specific offset to a [`Value::String`].
     ///
     /// [`Value::String`]: crate::value::Value::String
     pub(crate) fn string(&mut self, is_le: bool) -> DecodeResult<Value> {
-        let s = self.d_u32_string(is_le)?;
-        Ok(Value::String(s))
+        let bytes = self.d_u32_string_bytes(is_le)?;
+        let string = from_utf8(bytes.as_ref())?;
+        Ok(Value::String(string.to_owned()))
     }
 
     /// Check alignment and decode from a byte array at a specific offset to a
@@ -193,9 +188,9 @@ impl<'a> Decoder<'a> {
     ///
     /// [`Value::ObjectPath`]: crate::value::Value::ObjectPath
     pub(crate) fn object_path(&mut self, is_le: bool) -> DecodeResult<Value> {
-        let s = self.d_u32_string(is_le)?;
-        let o = ObjectPath::try_from(s)?;
-        Ok(Value::ObjectPath(o))
+        let bytes = self.d_u32_string_bytes(is_le)?;
+        let object_path = ObjectPath::try_from(bytes.as_ref())?;
+        Ok(Value::ObjectPath(object_path))
     }
 
     /// Decode from a byte array at a specific offset to a [`Signature`].
@@ -204,8 +199,8 @@ impl<'a> Decoder<'a> {
     /// [`Signature`]: crate::value::Signature
     pub(crate) fn d_signature(&mut self) -> DecodeResult<Vec<Type>> {
         let signature_length = self.b()? as usize;
-        let signature = self.d_string(signature_length)?;
-        let signature = Type::from_string_to_signature(&signature)?;
+        let bytes = self.d_string_bytes(signature_length)?;
+        let signature = Type::from_bytes_to_signature(bytes.as_ref())?;
         Ok(signature)
     }
 
@@ -213,7 +208,7 @@ impl<'a> Decoder<'a> {
     ///
     /// [`Value::Signature`]: crate::value::Value::Signature
     pub(crate) fn signature(&mut self) -> DecodeResult<Value> {
-        let s = self.d_signature()?;
-        Ok(Value::Signature(s))
+        let signature = self.d_signature()?;
+        Ok(Value::Signature(signature))
     }
 }

@@ -140,6 +140,18 @@ impl TryFrom<&str> for Error {
     }
 }
 
+impl TryFrom<&[u8]> for Error {
+    type Error = ErrorError;
+
+    fn try_from(error: &[u8]) -> Result<Self, Self::Error> {
+        check(error)?;
+        let error = error.to_vec();
+        //  The vector only contains valid UTF-8 (ASCII) characters because it was already
+        //  checked by the `check` function above
+        unsafe { Ok(Error(String::from_utf8_unchecked(error))) }
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.0)

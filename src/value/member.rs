@@ -93,6 +93,18 @@ impl TryFrom<&str> for Member {
     }
 }
 
+impl TryFrom<&[u8]> for Member {
+    type Error = MemberError;
+
+    fn try_from(member: &[u8]) -> Result<Self, Self::Error> {
+        check(member)?;
+        let member = member.to_vec();
+        //  The vector only contains valid UTF-8 (ASCII) characters because it was already
+        //  checked by the `check` function above
+        unsafe { Ok(Member(String::from_utf8_unchecked(member))) }
+    }
+}
+
 impl Display for Member {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.0)
