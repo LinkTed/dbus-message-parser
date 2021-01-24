@@ -1,9 +1,9 @@
 use crate::encode::{EncodeError, EncodeResult, Encoder};
-use crate::value::{Array, Value, MAXIMUM_ARRAY_LENGTH};
+use crate::value::{Array, Struct, Value, MAXIMUM_ARRAY_LENGTH};
 use std::slice::from_ref;
 
 impl Encoder {
-    /// Apply the alignment and encode a `&[Value]` as an array into the buffer.
+    /// Apply the alignment and encode a `&Array` as an array into the buffer.
     pub fn array(&mut self, array: &Array, is_le: bool) -> EncodeResult<()> {
         self.algin(4);
         let array_len_offset = self.buf.len();
@@ -26,11 +26,11 @@ impl Encoder {
         Ok(())
     }
 
-    /// Apply the alignment and encode a `&[Value]` as a struct into the buffer.
-    pub fn encode_struct(&mut self, values: &[Value], is_le: bool) -> EncodeResult<()> {
+    /// Apply the alignment and encode a `&Struct` as a struct into the buffer.
+    pub fn encode_struct(&mut self, struct_: &Struct, is_le: bool) -> EncodeResult<()> {
         self.algin(8);
-        for v in values {
-            self.value(v, is_le)?;
+        for value in struct_.as_ref() {
+            self.value(value, is_le)?;
         }
 
         Ok(())

@@ -51,7 +51,7 @@ impl Encoder {
             }
             Value::Signature(s) => self.signature(s),
             Value::Array(array) => self.array(array, is_le),
-            Value::Struct(vec) => self.encode_struct(vec, is_le),
+            Value::Struct(struct_) => self.encode_struct(struct_, is_le),
             Value::DictEntry(b) => self.dict_entry(b, is_le),
             Value::Variant(v) => self.variant(v, is_le),
             #[cfg(target_family = "unix")]

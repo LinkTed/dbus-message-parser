@@ -1,8 +1,8 @@
 use crate::decode::MAXIMUM_VARIANT_DEPTH;
 use crate::message::{MessageHeaderError, MessageHeaderField, MessageHeaderFieldError};
 use crate::value::{
-    BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, Type, TypeError, Value,
-    MAXIMUM_ARRAY_LENGTH,
+    BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, StructError, Type,
+    TypeError, Value, MAXIMUM_ARRAY_LENGTH,
 };
 use std::str::Utf8Error;
 use thiserror::Error;
@@ -34,6 +34,8 @@ pub enum DecodeError {
     ErrorError(#[from] ErrorError),
     #[error("Could not decode Signature: {0}")]
     SignatureError(#[from] TypeError),
+    #[error("Could not decode Struct: {0}")]
+    StructError(#[from] StructError),
     #[error("Padding is not zero: {0}")]
     Padding(u8),
     #[error("Array length is too big: {MAXIMUM_ARRAY_LENGTH} < {0}")]

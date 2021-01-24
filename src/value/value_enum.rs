@@ -1,5 +1,6 @@
 use crate::message::MessageHeaderField;
-use crate::value::{Array, ObjectPath, Type, TypeError};
+use crate::value::{Array, ObjectPath, Struct, Type, TypeError};
+use std::convert::TryFrom;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
@@ -21,7 +22,7 @@ pub enum Value {
     ObjectPath(ObjectPath),
     Signature(Vec<Type>),
     Array(Array),
-    Struct(Vec<Value>),
+    Struct(Struct),
     DictEntry(Box<(Value, Value)>),
     Variant(Box<Value>),
     #[cfg(target_family = "unix")]
@@ -60,9 +61,9 @@ impl Value {
                     dict_depth,
                 )?;
             }
-            Value::Struct(vec) => {
+            Value::Struct(struct_) => {
                 signature_string.push('(');
-                for v in vec {
+                for v in struct_.as_ref() {
                     v.to_signature_string(
                         signature_string,
                         array_depth,
@@ -123,9 +124,9 @@ impl Value {
                 let signature = Box::new(array.get_type().clone());
                 Ok(Type::Array(signature))
             }
-            Value::Struct(values) => {
+            Value::Struct(struct_) => {
                 let mut signatures = Vec::new();
-                for value in values {
+                for value in struct_.as_ref() {
                     let signature =
                         value.from_value_to_type(array_depth, struct_depth + 1, dict_depth)?;
                     signatures.push(signature);
@@ -167,6 +168,7 @@ impl From<MessageHeaderField> for Value {
             MessageHeaderField::UnixFDs(u) => (Value::Byte(9), Value::Uint32(u)),
         };
 
-        Value::Struct(vec![b, Value::Variant(Box::new(v))])
+        let struct_ = Struct::try_from(vec![b, Value::Variant(Box::new(v))]).unwrap();
+        Value::Struct(struct_)
     }
 }

@@ -1,5 +1,6 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder, MAXIMUM_VARIANT_DEPTH};
-use crate::value::{Array, Type, Value, MAXIMUM_ARRAY_LENGTH};
+use crate::value::{Array, Struct, Type, Value, MAXIMUM_ARRAY_LENGTH};
+use std::convert::TryFrom;
 use std::slice::from_ref;
 
 impl<'a> Decoder<'a> {
@@ -72,8 +73,9 @@ impl<'a> Decoder<'a> {
         signature: &[Type],
     ) -> DecodeResult<Value> {
         self.algin(8)?;
-        let v = self.value(is_le, variant_depth, signature)?;
-        Ok(Value::Struct(v))
+        let values = self.value(is_le, variant_depth, signature)?;
+        let struct_ = Struct::try_from(values)?;
+        Ok(Value::Struct(struct_))
     }
 
     /// Decode from a byte array at a specific offset to a [`Value::DictEntry`].

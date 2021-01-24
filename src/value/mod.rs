@@ -8,7 +8,7 @@ mod type_enum;
 mod value_enum;
 
 pub use bus::{Bus, BusError};
-pub use container::{Array, ArrayError};
+pub use container::{Array, ArrayError, Struct, StructError};
 pub use error::{Error, ErrorError};
 pub use interface::{Interface, InterfaceError};
 pub use member::{Member, MemberError};

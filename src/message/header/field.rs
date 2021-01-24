@@ -90,8 +90,8 @@ impl TryFrom<Value> for MessageHeaderField {
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
         // The outer `Value` has to be a struct.
-        let mut values = match value {
-            Value::Struct(values) => values,
+        let mut values: Vec<Value> = match value {
+            Value::Struct(struct_) => struct_.into(),
             v => return Err(MessageHeaderFieldError::Struct(v)),
         };
         // The length of the struct have to be 2
