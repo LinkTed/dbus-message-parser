@@ -1,5 +1,5 @@
 use crate::decode::{DecodeError, Decoder};
-use crate::value::Type;
+use crate::value::{Type, TypeError};
 use bytes::Bytes;
 
 #[test]
@@ -13,10 +13,9 @@ fn variant_depth_error() {
 fn variant_single_value_error() {
     let b = Bytes::from_static(b"\x02\x79\x79\x00\x01\x01");
     let mut decoder = Decoder::new(b);
-    let signature = vec![Type::Byte, Type::Byte];
     assert_eq!(
         decoder.variant(true, 0),
-        Err(DecodeError::VariantSingleValue(signature))
+        Err(DecodeError::SignatureError(TypeError::MultiplyTypes))
     );
 }
 

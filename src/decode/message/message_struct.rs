@@ -13,7 +13,7 @@ impl<'a> Decoder<'a> {
         signature: &[Type],
     ) -> DecodeResult<Vec<Value>> {
         let end = Decoder::<'a>::checked_add(self.offset, length as usize)?;
-        let body = self.value(is_le, 0, signature)?;
+        let body = self.values(is_le, 0, signature)?;
         if end == self.offset {
             Ok(body)
         } else {

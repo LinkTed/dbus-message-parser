@@ -8,7 +8,7 @@ use std::convert::TryFrom;
 
 impl<'a> Decoder<'a> {
     fn message_header_type(&mut self) -> DecodeResult<MessageType> {
-        let b = self.b()?;
+        let b = self.u_8()?;
         match MessageType::try_from(b) {
             Ok(message_type) => Ok(message_type),
             Err(message_type) => Err(DecodeError::MessageType(message_type)),
@@ -16,7 +16,7 @@ impl<'a> Decoder<'a> {
     }
 
     fn message_header_flags(&mut self) -> DecodeResult<MessageFlags> {
-        let b = self.b()?;
+        let b = self.u_8()?;
         match MessageFlags::from_bits(b) {
             Some(message_flags) => Ok(message_flags),
             None => Err(DecodeError::MessageFlags(b)),
@@ -43,7 +43,7 @@ impl<'a> Decoder<'a> {
     }
 
     fn message_header_is_le(&mut self) -> DecodeResult<bool> {
-        match self.b()? {
+        match self.u_8()? {
             0x6c => Ok(true),
             0x42 => Ok(false),
             b => Err(DecodeError::Endianness(b)),
@@ -60,7 +60,7 @@ impl<'a> Decoder<'a> {
         let message_flags = self.message_header_flags()?;
 
         // Get the major protocol version.
-        let version = self.b()?;
+        let version = self.u_8()?;
 
         // Get the length in bytes of the message body.
         let body_length = self.u_32(is_le)?;

@@ -9,7 +9,7 @@ use std::str::from_utf8;
 
 impl<'a> Decoder<'a> {
     /// Decode from a byte array at a specific offset to a `u8`.
-    pub(crate) fn b(&mut self) -> DecodeResult<u8> {
+    pub(crate) fn u_8(&mut self) -> DecodeResult<u8> {
         let buf = self.read(size_of::<u8>())?;
         Ok(buf[0])
     }
@@ -18,7 +18,7 @@ impl<'a> Decoder<'a> {
     ///
     /// [`Value::Byte`]: crate::value::Value::Byte
     pub(crate) fn byte(&mut self) -> DecodeResult<Value> {
-        let b = self.b()?;
+        let b = self.u_8()?;
         Ok(Value::Byte(b))
     }
 
@@ -159,7 +159,7 @@ impl<'a> Decoder<'a> {
     #[inline]
     fn d_string_bytes(&mut self, length: usize) -> DecodeResult<Bytes> {
         let bytes = self.read(length)?;
-        match self.b()? {
+        match self.u_8()? {
             0 => Ok(bytes),
             b => Err(DecodeError::StringNotNull(b)),
         }
@@ -171,6 +171,15 @@ impl<'a> Decoder<'a> {
     /// [`String`]: std::string:String
     fn d_u32_string_bytes(&mut self, is_le: bool) -> DecodeResult<Bytes> {
         let string_length = self.u_32(is_le)? as usize;
+        self.d_string_bytes(string_length)
+    }
+
+    /// Check alignment and decode from a byte array at a specific offset to a [`String`].
+    /// The size of the length is 4.
+    ///
+    /// [`String`]: std::string:String
+    fn d_u8_string_bytes(&mut self) -> DecodeResult<Bytes> {
+        let string_length = self.u_8()? as usize;
         self.d_string_bytes(string_length)
     }
 
@@ -193,17 +202,25 @@ impl<'a> Decoder<'a> {
         Ok(Value::ObjectPath(object_path))
     }
 
+    /// Decode from a byte array at a specific offset to a [`Type`].
+    /// The size of the length is 1.
+    ///
+    /// [`Type`]: crate::value::Type
+    pub(crate) fn d_type(&mut self) -> DecodeResult<Type> {
+        let bytes = self.d_u8_string_bytes()?;
+        let type_ = Type::try_from(bytes.as_ref())?;
+        Ok(type_)
+    }
+
     /// Decode from a byte array at a specific offset to a [`Signature`].
     /// The size of the length is 1.
     ///
     /// [`Signature`]: crate::value::Signature
     pub(crate) fn d_signature(&mut self) -> DecodeResult<Vec<Type>> {
-        let signature_length = self.b()? as usize;
-        let bytes = self.d_string_bytes(signature_length)?;
+        let bytes = self.d_u8_string_bytes()?;
         let signature = Type::from_bytes_to_signature(bytes.as_ref())?;
         Ok(signature)
     }
-
     /// Decode from a byte array at a specific offset to a [`Value::Signature`].
     ///
     /// [`Value::Signature`]: crate::value::Value::Signature

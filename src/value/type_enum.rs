@@ -298,8 +298,16 @@ impl TryFrom<&str> for Type {
     type Error = TypeError;
 
     fn try_from(type_string: &str) -> Result<Self, Self::Error> {
+        Type::try_from(type_string.as_bytes())
+    }
+}
+
+impl TryFrom<&[u8]> for Type {
+    type Error = TypeError;
+
+    fn try_from(type_string: &[u8]) -> Result<Self, Self::Error> {
         let mut type_string_offset = 0;
-        let type_ = next_type(type_string.as_bytes(), &mut type_string_offset, 0, 0, 0)?;
+        let type_ = next_type(type_string, &mut type_string_offset, 0, 0, 0)?;
         if type_string.len() == type_string_offset {
             Ok(type_)
         } else {

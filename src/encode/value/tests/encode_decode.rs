@@ -10,7 +10,7 @@ fn encode_decode(value_1: &Value, is_le: bool) {
     let bytes = encoder.buf.freeze();
     let mut decoder = Decoder::new(bytes);
     let type_ = value_1.get_type().unwrap();
-    let value_2 = decoder.value(is_le, 0, &[type_]).unwrap();
+    let value_2 = decoder.values(is_le, 0, &[type_]).unwrap();
 
     if let Some(ordering) = value_1.partial_cmp(&value_2[0]) {
         match ordering {

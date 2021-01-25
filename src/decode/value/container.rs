@@ -1,7 +1,6 @@
 use crate::decode::{DecodeError, DecodeResult, Decoder, MAXIMUM_VARIANT_DEPTH};
 use crate::value::{Array, Struct, Type, Value, MAXIMUM_ARRAY_LENGTH};
 use std::convert::TryFrom;
-use std::slice::from_ref;
 
 impl<'a> Decoder<'a> {
     /// Decode from a byte array at a specific offset to a [`Value::Variant`].
@@ -13,14 +12,9 @@ impl<'a> Decoder<'a> {
             return Err(DecodeError::VariantDepth(variant_depth));
         }
 
-        let signature = self.d_signature()?;
-        if signature.len() == 1 {
-            let mut v = self.value(is_le, variant_depth, &signature)?;
-            let v = v.pop().unwrap();
-            Ok(Value::Variant(Box::new(v)))
-        } else {
-            Err(DecodeError::VariantSingleValue(signature))
-        }
+        let type_ = self.d_type()?;
+        let value = self.value(is_le, variant_depth, &type_)?;
+        Ok(Value::Variant(Box::new(value)))
     }
 
     /// Check alignment and decode from a byte array at a specific offset to a `Vec<Value>`.
@@ -36,16 +30,15 @@ impl<'a> Decoder<'a> {
         }
 
         self.algin(type_.get_alignment())?;
-        let type_ = from_ref(type_);
-        let mut r = Vec::new();
+        let mut array = Vec::new();
         let end = Decoder::<'a>::checked_add(self.offset, array_size as usize)?;
         while self.offset < end {
-            let mut v = self.value(is_le, variant_depth, type_)?;
-            r.push(v.pop().unwrap());
+            let value = self.value(is_le, variant_depth, type_)?;
+            array.push(value);
         }
 
         if self.offset == end {
-            Ok(r)
+            Ok(array)
         } else {
             Err(DecodeError::ArrayInvalidLength(self.offset, end))
         }
@@ -73,7 +66,7 @@ impl<'a> Decoder<'a> {
         signature: &[Type],
     ) -> DecodeResult<Value> {
         self.algin(8)?;
-        let values = self.value(is_le, variant_depth, signature)?;
+        let values = self.values(is_le, variant_depth, signature)?;
         let struct_ = Struct::try_from(values)?;
         Ok(Value::Struct(struct_))
     }
@@ -89,15 +82,8 @@ impl<'a> Decoder<'a> {
         value_type: &Type,
     ) -> DecodeResult<Value> {
         self.algin(8)?;
-
-        let key_type = from_ref(key_type);
-        let mut v = self.value(is_le, variant_depth, key_type)?;
-        let k = v.pop().unwrap();
-
-        let value_type = from_ref(value_type);
-        let mut v = self.value(is_le, variant_depth, value_type)?;
-        let v = v.pop().unwrap();
-
-        Ok(Value::DictEntry(Box::new((k, v))))
+        let key = self.value(is_le, variant_depth, key_type)?;
+        let value = self.value(is_le, variant_depth, value_type)?;
+        Ok(Value::DictEntry(Box::new((key, value))))
     }
 }

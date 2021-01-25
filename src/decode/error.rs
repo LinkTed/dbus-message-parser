@@ -14,8 +14,6 @@ pub type DecodeResult<T> = Result<T, DecodeError>;
 pub enum DecodeError {
     #[error("Not enough bytes to decode: got {0} offset {1}")]
     NotEnoughBytes(usize, usize),
-    #[error("Expected exactly one Value for variant: {0:?}")]
-    VariantSingleValue(Vec<Type>),
     #[error("Boolean value only can be 0 or 1: {0}")]
     InvalidBoolean(u32),
     #[error("Could not decode string as UTF-8: {0}")]
