@@ -11,6 +11,7 @@ include = [
     "src/**/*.rs",
     "tests/*.rs",
     "examples/*.rs", 
+    "benches/*.rs",
     "Cargo.toml",
     "README.md",
     "LICENSE",

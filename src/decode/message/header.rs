@@ -127,7 +127,10 @@ fn message_header_is_le_error() {
 
 #[test]
 fn message_header_fields_error() {
-    let b = Bytes::from_static(b"\x10\x00\x00\x00\x00\x00\x00\x00\x05\x01\x75\x00\x01\x00\x00\x00\x05\x01\x75\x00\x01\x00\x00\x00");
+    let b = Bytes::from_static(
+        b"\x10\x00\x00\x00\x00\x00\x00\x00\x05\x01\x75\x00\x01\x00\x00\x00\
+    \x05\x01\x75\x00\x01\x00\x00\x00",
+    );
     let mut decoder = Decoder::new(b);
     assert_eq!(
         decoder.message_header_fields(true),
