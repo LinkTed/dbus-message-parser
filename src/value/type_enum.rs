@@ -306,9 +306,14 @@ impl TryFrom<&[u8]> for Type {
     type Error = TypeError;
 
     fn try_from(type_string: &[u8]) -> Result<Self, Self::Error> {
+        let type_string_len = type_string.len();
+        if MAXIMUM_SIGNATURE_LENGTH < type_string_len {
+            return Err(TypeError::ExceedMaximum(type_string_len));
+        }
+
         let mut type_string_offset = 0;
         let type_ = next_type(type_string, &mut type_string_offset, 0, 0, 0)?;
-        if type_string.len() == type_string_offset {
+        if type_string_len == type_string_offset {
             Ok(type_)
         } else {
             Err(TypeError::MultiplyTypes)
