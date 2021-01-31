@@ -10,14 +10,15 @@ A library to encode and decode [DBus message](https://dbus.freedesktop.org/doc/d
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-dbus-message-parser = "4.0"
+dbus-message-parser = "~4.1.0"
 ```
 
 ## Example
 The following examples show how to create a `METHOD_CALL` message and a `SIGNAL` message.
 ```rust
-use bytes::{Bytes, BytesMut};
-use dbus_message_parser::{Decoder, Encoder, Message, Value};
+use bytes::Bytes;
+use dbus_message_parser::message::Message;
+use dbus_message_parser::value::Value;
 use std::convert::TryInto;
 
 fn create_method_call() {
@@ -93,4 +94,6 @@ fn decode_method_call() {
 This project is licensed under the [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0) license.
 
 ### Contribution
-Any contribution intentionally submitted for inclusion in `dbus-message-parser` by you, shall be licensed as [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0), without any additional terms or conditions.
+Any contribution intentionally submitted for inclusion in `dbus-message-parser` by you, shall be 
+licensed as [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0), without any additional terms or 
+conditions.
