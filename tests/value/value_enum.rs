@@ -1,4 +1,5 @@
-use dbus_message_parser::value::Type;
+use dbus_message_parser::value::{Array, Struct, StructError, Type, Value};
+use std::convert::TryFrom;
 
 #[test]
 fn byte_alignment() {
@@ -99,4 +100,18 @@ fn dict_entry_alignment() {
 fn unix_fd_alignment() {
     let type_ = Type::UnixFD;
     assert_eq!(type_.get_alignment(), 4);
+}
+
+#[test]
+fn array_into() {
+    let array = vec![Value::Int32(2)];
+    let array = Array::new(array, Type::Int32).unwrap();
+    let array: Vec<Value> = array.into();
+    assert_eq!(array, vec![Value::Int32(2)]);
+}
+
+#[test]
+fn struct_error() {
+    let result = Struct::try_from(Vec::new());
+    assert_eq!(result, Err(StructError::Empty));
 }

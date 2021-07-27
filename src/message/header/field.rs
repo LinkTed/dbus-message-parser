@@ -78,7 +78,13 @@ impl Display for MessageHeaderField {
                 write!(f, "destination='{}'", destination)
             }
             MessageHeaderField::Sender(sender) => write!(f, "sender='{}'", sender),
-            MessageHeaderField::Signature(signature) => write!(f, "signature='{:?}'", signature),
+            MessageHeaderField::Signature(signature) => {
+                if let Ok(s) = Type::from_signature_to_string(signature) {
+                    write!(f, "signature='{}'", s)
+                } else {
+                    write!(f, "signature=''")
+                }
+            }
             #[cfg(target_family = "unix")]
             MessageHeaderField::UnixFDs(unix_fds) => write!(f, "unix_fds='{}'", unix_fds),
         }
