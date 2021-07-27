@@ -95,7 +95,7 @@ jobs:
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
           RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
       - name: Convert gcno and gcda files into lcov 
-        run: ./grcov --llvm target/debug -s . -t lcov -o lcov.info --ignore-not-existing --ignore "tests/*" --ignore "examples/*" --ignore "/*" --excl-line "^ *#\["
+        run: ./grcov --llvm target/debug -s . -t lcov -o lcov.info --ignore-not-existing --ignore "tests/*" --ignore "examples/*" --ignore "/*" --excl-line "(^ *#\[|#\[from\])"
       - name: Upload coverage
         uses: codecov/codecov-action@v1
         with:
