@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 
 fn decode_encode_decode(msg: &[u8]) {
     // Decode Bytes to message
-    let bytes = Bytes::copy_from_slice(&msg[..]);
+    let bytes = Bytes::copy_from_slice(msg);
     let (msg_1, _) = Message::decode(bytes).unwrap();
 
     // Encode message to BytesMut

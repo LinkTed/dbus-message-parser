@@ -41,8 +41,8 @@ impl<'a> Decoder<'a> {
             Type::Signature => self.signature(),
             #[cfg(target_family = "unix")]
             Type::UnixFD => self.unix_fd(is_le),
-            Type::Array(type_) => self.array(is_le, variant_depth, &type_),
-            Type::Struct(signature) => self.decode_struct(is_le, variant_depth, &signature),
+            Type::Array(type_) => self.array(is_le, variant_depth, type_),
+            Type::Struct(signature) => self.decode_struct(is_le, variant_depth, signature),
             Type::DictEntry(signature) => {
                 self.dict_entry(is_le, variant_depth, &signature.0, &signature.1)
             }

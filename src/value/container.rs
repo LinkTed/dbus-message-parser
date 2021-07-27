@@ -24,7 +24,7 @@ impl Array {
                 return Err(ArrayError::TypeMismatch(type_, s));
             }
         }
-        let array = Array { array, type_ };
+        let array = Array { type_, array };
         Ok(array)
     }
 
