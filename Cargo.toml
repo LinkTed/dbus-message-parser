@@ -1,6 +1,6 @@
 [package]
 name = "dbus-message-parser"
-version = "4.1.0"
+version = "4.2.0"
 edition = "2018"
 description = "Libary to encode and decode DBus message"
 readme = "README.md"
