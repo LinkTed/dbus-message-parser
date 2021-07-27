@@ -40,6 +40,12 @@ impl AsRef<[Value]> for Array {
     }
 }
 
+impl From<Array> for Vec<Value> {
+    fn from(array: Array) -> Self {
+        array.array
+    }
+}
+
 #[derive(Debug, Clone, PartialOrd, PartialEq)]
 pub struct Struct(pub(crate) Vec<Value>);
 
