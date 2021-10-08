@@ -7,7 +7,10 @@ mod object_path;
 mod type_enum;
 mod value_enum;
 
-pub use bus::{Bus, BusError};
+pub use bus::{
+    Bus, BusError, UniqueConnectionName, UniqueConnectionNameError, WellKnownBusName,
+    WellKnownBusNameError,
+};
 pub use container::{Array, ArrayError, Struct, StructError};
 pub use error::{Error, ErrorError};
 pub use interface::{Interface, InterfaceError};

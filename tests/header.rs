@@ -1,6 +1,6 @@
 use dbus_message_parser::message::{MessageHeaderField, MessageHeaderFieldError};
 use dbus_message_parser::value::{
-    BusError, ErrorError, InterfaceError, MemberError, Struct, Type, Value,
+    BusError, ErrorError, InterfaceError, MemberError, Struct, Type, Value, WellKnownBusNameError,
 };
 use std::convert::{TryFrom, TryInto};
 
@@ -302,9 +302,9 @@ fn destination_error_2() {
     let value = Value::Struct(struct_);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(MessageHeaderFieldError::BusError(BusError::InvalidChar(
-            b'/'
-        )))
+        Err(MessageHeaderFieldError::BusError(
+            BusError::WellKnownBusNameError(WellKnownBusNameError::InvalidChar(b'/'))
+        ))
     );
 }
 
@@ -315,7 +315,9 @@ fn destination_error_3() {
     let value = Value::Struct(struct_);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(MessageHeaderFieldError::BusError(BusError::Empty))
+        Err(MessageHeaderFieldError::BusError(
+            BusError::WellKnownBusNameError(WellKnownBusNameError::Empty)
+        ))
     );
 }
 
@@ -363,9 +365,9 @@ fn sender_error_2() {
     let value = Value::Struct(struct_);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(MessageHeaderFieldError::BusError(BusError::InvalidChar(
-            b'/'
-        )))
+        Err(MessageHeaderFieldError::BusError(
+            BusError::WellKnownBusNameError(WellKnownBusNameError::InvalidChar(b'/'))
+        ))
     );
 }
 
@@ -376,7 +378,9 @@ fn sender_error_3() {
     let value = Value::Struct(struct_);
     assert_eq!(
         MessageHeaderField::try_from(value),
-        Err(MessageHeaderFieldError::BusError(BusError::Empty))
+        Err(MessageHeaderFieldError::BusError(
+            BusError::WellKnownBusNameError(WellKnownBusNameError::Empty)
+        ))
     );
 }
 
