@@ -83,5 +83,6 @@
 
 pub mod decode;
 pub mod encode;
+pub mod match_rule;
 pub mod message;
 pub mod value;

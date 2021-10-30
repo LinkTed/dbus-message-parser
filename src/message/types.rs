@@ -1,4 +1,8 @@
-use std::convert::TryFrom;
+use crate::match_rule::MatchRuleError;
+use std::{
+    convert::TryFrom,
+    fmt::{Display, Formatter, Result as FmtResult},
+};
 
 /// An enum representing the [message type].
 ///
@@ -34,6 +38,31 @@ impl TryFrom<u8> for MessageType {
             3 => Ok(MessageType::Error),
             4 => Ok(MessageType::Signal),
             message_type => Err(message_type),
+        }
+    }
+}
+
+impl Display for MessageType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
+            MessageType::MethodCall => write!(f, "method_call"),
+            MessageType::MethodReturn => write!(f, "method_return"),
+            MessageType::Error => write!(f, "error"),
+            MessageType::Signal => write!(f, "signal"),
+        }
+    }
+}
+
+impl TryFrom<&str> for MessageType {
+    type Error = MatchRuleError;
+
+    fn try_from(r#type: &str) -> Result<Self, MatchRuleError> {
+        match r#type {
+            "method_call" => Ok(MessageType::MethodCall),
+            "method_return" => Ok(MessageType::MethodReturn),
+            "error" => Ok(MessageType::Error),
+            "signal" => Ok(MessageType::Signal),
+            _ => Err(MatchRuleError::TypeUnknown),
         }
     }
 }
