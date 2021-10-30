@@ -12,7 +12,14 @@ honggfuzz = "~0.5.52"
 path = ".."
 
 [[bin]]
-name = "decode_encode_decode"
-path = "src/decode_encode_decode.rs"
+name = "decode_encode_decode_message"
+path = "src/decode_encode_decode_message.rs"
+test = false
+doc = false
+
+
+[[bin]]
+name = "decode_encode_decode_match_rule"
+path = "src/decode_encode_decode_match_rule.rs"
 test = false
 doc = false
