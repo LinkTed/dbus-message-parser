@@ -4,7 +4,10 @@ mod message_struct;
 mod types;
 
 pub use flags::MessageFlags;
-pub use header::{MessageHeader, MessageHeaderError, MessageHeaderField, MessageHeaderFieldError};
+pub use header::{
+    Header as MessageHeader, HeaderError as MessageHeaderError,
+    HeaderFields as MessageHeaderFields, HeaderFieldsError as MessageHeaderFieldsError,
+};
 pub use message_struct::Message;
 pub use types::MessageType;
 

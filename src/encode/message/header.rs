@@ -1,6 +1,8 @@
-use crate::encode::{EncodeResult, Encoder};
-use crate::message::{MessageHeader, MessageHeaderField};
-use crate::value::{Array, Type, Value};
+use crate::{
+    encode::{EncodeResult, Encoder},
+    message::MessageHeader,
+    value::{Array, Type, Value},
+};
 use cfg_if::cfg_if;
 use lazy_static::lazy_static;
 use std::convert::TryInto;
@@ -36,12 +38,12 @@ impl Encoder {
             if #[cfg(target_family = "unix")] {
                 let fds_len = self.fds.len();
                 if fds_len != 0 {
-                    fields.insert(MessageHeaderField::UnixFDs(fds_len as u32));
+                    fields.unix_fds = Some(fds_len as u32);
                 }
             }
         }
         let body_length = if let Some((body_length, body_signature)) = body {
-            fields.insert(MessageHeaderField::Signature(body_signature));
+            fields.signature = Some(body_signature);
             body_length
         } else {
             0
@@ -51,7 +53,7 @@ impl Encoder {
         self.u_32(message_header.serial, is_le);
 
         // Encode the header fields.
-        let headers: Vec<Value> = fields.into_iter().map(Value::from).collect();
+        let headers: Vec<Value> = fields.into();
         let headers = Array {
             array: headers,
             type_: ARRAY_TYPE.clone(),

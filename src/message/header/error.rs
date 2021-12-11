@@ -1,7 +1,7 @@
-use thiserror::Error;
+use thiserror::Error as ThisError;
 
-#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq, Error)]
-pub enum MessageHeaderError {
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq, ThisError)]
+pub enum Error {
     #[error("Path is missing")]
     MissingPath,
     #[error("Interface is missing")]

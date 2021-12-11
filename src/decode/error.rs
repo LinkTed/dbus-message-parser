@@ -1,8 +1,10 @@
-use crate::decode::MAXIMUM_VARIANT_DEPTH;
-use crate::message::{MessageHeaderError, MessageHeaderField, MessageHeaderFieldError};
-use crate::value::{
-    BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, StructError, Type,
-    TypeError, MAXIMUM_ARRAY_LENGTH,
+use crate::{
+    decode::MAXIMUM_VARIANT_DEPTH,
+    message::{MessageHeaderError, MessageHeaderFieldsError},
+    value::{
+        BusError, ErrorError, InterfaceError, MemberError, ObjectPathError, StructError, Type,
+        TypeError, MAXIMUM_ARRAY_LENGTH,
+    },
 };
 use std::str::Utf8Error;
 use thiserror::Error;
@@ -46,8 +48,6 @@ pub enum DecodeError {
     MessageType(u8),
     #[error("Could not decode MessageFlags: {0}")]
     MessageFlags(u8),
-    #[error("The MessageHeaderField {0} exists twice in the header")]
-    MessageHeaderFieldDouble(MessageHeaderField),
     #[error("The body length is zero, but there is a body signature '{0:?}'")]
     BodyLengthZero(Vec<Type>),
     #[error("The body signature is missing, but there body length 0 != {0}")]
@@ -58,8 +58,8 @@ pub enum DecodeError {
     BodyLength(usize, usize),
     #[error("Could not decode MessageHeader: {0}")]
     MessageHeaderError(#[from] MessageHeaderError),
-    #[error("Could not decode MessageHeaderField: {0}")]
-    MessageHeaderFieldError(#[from] MessageHeaderFieldError),
+    #[error("Could not decode MessageHeaderFields: {0}")]
+    MessageHeaderFieldsError(#[from] MessageHeaderFieldsError),
     #[error("Integer overflows occours: {0} + {1}")]
     IntegerOverflow(usize, usize),
     #[error("Variant depth is too big: {MAXIMUM_VARIANT_DEPTH} < {0}")]

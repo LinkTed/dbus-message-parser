@@ -1,6 +1,10 @@
-use crate::message::{MessageFlags, MessageHeader, MessageHeaderField, MessageType};
-use crate::value::{Bus, Error, Interface, Member, ObjectPath, Type, TypeError, Value};
-use std::collections::BTreeSet;
+use crate::{
+    message::{
+        header::{Header, HeaderFields},
+        MessageFlags, MessageType,
+    },
+    value::{Bus, Error, Interface, Member, ObjectPath, Type, TypeError, Value},
+};
 use std::convert::TryInto;
 
 /// This represents a DBus [message].
@@ -8,13 +12,13 @@ use std::convert::TryInto;
 /// [message]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol
 #[derive(Debug, Clone, PartialOrd, PartialEq)]
 pub struct Message {
-    pub(crate) header: MessageHeader,
+    pub(crate) header: Header,
     pub(crate) body: Vec<Value>,
 }
 
 impl Message {
     /// Create a [`Message`] object.
-    pub fn new(header: MessageHeader, body: Vec<Value>) -> Message {
+    pub fn new(header: Header, body: Vec<Value>) -> Message {
         Message { header, body }
     }
 
@@ -27,14 +31,15 @@ impl Message {
         interface: Interface,
         member: Member,
     ) -> Message {
-        let mut fields = BTreeSet::new();
+        let fields = HeaderFields {
+            destination: Some(destination),
+            path: Some(object_path),
+            interface: Some(interface),
+            member: Some(member),
+            ..Default::default()
+        };
 
-        fields.insert(MessageHeaderField::Destination(destination));
-        fields.insert(MessageHeaderField::Path(object_path));
-        fields.insert(MessageHeaderField::Interface(interface));
-        fields.insert(MessageHeaderField::Member(member));
-
-        let header = MessageHeader {
+        let header = Header {
             is_le: true,
             message_type: MessageType::MethodCall,
             message_flags: MessageFlags::empty(),
@@ -52,13 +57,14 @@ impl Message {
     ///
     /// [`Signal`]: crate::message::MessageType::Signal
     pub fn signal(object_path: ObjectPath, interface: Interface, member: Member) -> Message {
-        let mut fields = BTreeSet::new();
+        let fields = HeaderFields {
+            path: Some(object_path),
+            interface: Some(interface),
+            member: Some(member),
+            ..Default::default()
+        };
 
-        fields.insert(MessageHeaderField::Path(object_path));
-        fields.insert(MessageHeaderField::Interface(interface));
-        fields.insert(MessageHeaderField::Member(member));
-
-        let header = MessageHeader {
+        let header = Header {
             is_le: true,
             message_type: MessageType::Signal,
             message_flags: MessageFlags::NO_REPLY_EXPECTED,
@@ -303,12 +309,10 @@ impl Message {
     }
 
     /// Split the [`Message`] object into the header and the body.
-    pub fn split(mut self) -> Result<(MessageHeader, Vec<Value>), TypeError> {
+    pub fn split(mut self) -> Result<(Header, Vec<Value>), TypeError> {
         let signature = self.get_signature()?;
         if !signature.is_empty() {
-            self.header
-                .fields
-                .insert(MessageHeaderField::Signature(signature));
+            self.header.fields.signature = Some(signature);
         }
         Ok((self.header, self.body))
     }

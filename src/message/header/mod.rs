@@ -1,7 +1,7 @@
 mod error;
-mod field;
+mod fields;
 mod header_struct;
 
-pub use error::MessageHeaderError;
-pub use field::{MessageHeaderField, MessageHeaderFieldError};
-pub use header_struct::MessageHeader;
+pub use error::Error as HeaderError;
+pub use fields::{Fields as HeaderFields, FieldsError as HeaderFieldsError};
+pub use header_struct::Header;

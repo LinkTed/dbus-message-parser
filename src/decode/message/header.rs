@@ -1,9 +1,10 @@
-use crate::decode::{DecodeError, DecodeResult, Decoder};
-use crate::message::{MessageFlags, MessageHeader, MessageHeaderField, MessageType};
-use crate::value::Type;
+use crate::{
+    decode::{DecodeError, DecodeResult, Decoder},
+    message::{MessageFlags, MessageHeader, MessageHeaderFields, MessageType},
+    value::Type,
+};
 #[cfg(test)]
 use bytes::Bytes;
-use std::collections::BTreeSet;
 use std::convert::TryFrom;
 
 impl<'a> Decoder<'a> {
@@ -26,20 +27,12 @@ impl<'a> Decoder<'a> {
     fn message_header_fields(
         &mut self,
         is_le: bool,
-    ) -> DecodeResult<(Option<Vec<Type>>, BTreeSet<MessageHeaderField>)> {
+    ) -> DecodeResult<(Option<Vec<Type>>, MessageHeaderFields)> {
         let signature = Type::Struct(vec![Type::Byte, Type::Variant]);
         let array = self.d_array(is_le, 0, &signature)?;
-        let mut body_signature = None;
-        let mut headers = BTreeSet::new();
-        for header_field in array {
-            let header = MessageHeaderField::try_from(header_field)?;
-            if let MessageHeaderField::Signature(signature) = header {
-                body_signature = Some(signature);
-            } else if let Some(replaced_header) = headers.replace(header) {
-                return Err(DecodeError::MessageHeaderFieldDouble(replaced_header));
-            }
-        }
-        Ok((body_signature, headers))
+        let mut fields = MessageHeaderFields::try_from(array)?;
+        let body_signature = fields.signature.take();
+        Ok((body_signature, fields))
     }
 
     fn message_header_is_le(&mut self) -> DecodeResult<bool> {
@@ -122,21 +115,6 @@ fn message_header_is_le_error() {
     assert_eq!(
         decoder.message_header_is_le(),
         Err(DecodeError::Endianness(0xff))
-    );
-}
-
-#[test]
-fn message_header_fields_error() {
-    let b = Bytes::from_static(
-        b"\x10\x00\x00\x00\x00\x00\x00\x00\x05\x01\x75\x00\x01\x00\x00\x00\
-    \x05\x01\x75\x00\x01\x00\x00\x00",
-    );
-    let mut decoder = Decoder::new(b);
-    assert_eq!(
-        decoder.message_header_fields(true),
-        Err(DecodeError::MessageHeaderFieldDouble(
-            MessageHeaderField::ReplySerial(0x01)
-        ))
     );
 }
 

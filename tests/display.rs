@@ -1,7 +1,5 @@
-use dbus_message_parser::message::MessageHeaderField;
 use dbus_message_parser::value::{Bus, Error, Interface, Member, ObjectPath, Type};
-use std::convert::{TryFrom, TryInto};
-use std::string::ToString;
+use std::{convert::TryFrom, string::ToString};
 
 #[test]
 fn bus() {
@@ -130,66 +128,4 @@ fn type_dict_entry() {
     let value = Type::String;
     let type_ = Type::DictEntry(Box::new((key, value)));
     assert_eq!(&type_.to_string(), "{is}");
-}
-
-#[test]
-fn message_header_field_path() {
-    let message_header_field = MessageHeaderField::Path("/object/path".try_into().unwrap());
-    assert_eq!(&message_header_field.to_string(), "path='/object/path'");
-}
-
-#[test]
-fn message_header_field_interface() {
-    let message_header_field = MessageHeaderField::Interface("interface.name".try_into().unwrap());
-    assert_eq!(
-        &message_header_field.to_string(),
-        "interface='interface.name'"
-    );
-}
-
-#[test]
-fn message_header_field_member() {
-    let message_header_field = MessageHeaderField::Member("MemberName".try_into().unwrap());
-    assert_eq!(&message_header_field.to_string(), "member='MemberName'");
-}
-
-#[test]
-fn message_header_field_error_name() {
-    let message_header_field = MessageHeaderField::ErrorName("error.name".try_into().unwrap());
-    assert_eq!(&message_header_field.to_string(), "error_name='error.name'");
-}
-
-#[test]
-fn message_header_field_reply_serial() {
-    let message_header_field = MessageHeaderField::ReplySerial(1234);
-    assert_eq!(&message_header_field.to_string(), "reply_serial='1234'");
-}
-
-#[test]
-fn message_header_field_destination() {
-    let message_header_field =
-        MessageHeaderField::Destination("destination.name".try_into().unwrap());
-    assert_eq!(
-        &message_header_field.to_string(),
-        "destination='destination.name'"
-    );
-}
-
-#[test]
-fn message_header_field_sender() {
-    let message_header_field = MessageHeaderField::Sender("sender.name".try_into().unwrap());
-    assert_eq!(&message_header_field.to_string(), "sender='sender.name'");
-}
-
-#[test]
-fn message_header_field_signature() {
-    let message_header_field = MessageHeaderField::Signature(vec![Type::Byte]);
-    assert_eq!(&message_header_field.to_string(), "signature='y'");
-}
-
-#[cfg(target_family = "unix")]
-#[test]
-fn message_header_field_unix_fds() {
-    let message_header_field = MessageHeaderField::UnixFDs(2);
-    assert_eq!(&message_header_field.to_string(), "unix_fds='2'");
 }

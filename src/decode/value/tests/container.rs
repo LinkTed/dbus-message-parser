@@ -1,5 +1,7 @@
-use crate::decode::{DecodeError, Decoder};
-use crate::value::{Type, TypeError};
+use crate::{
+    decode::{DecodeError, Decoder},
+    value::{Type, TypeError},
+};
 use bytes::Bytes;
 
 #[test]

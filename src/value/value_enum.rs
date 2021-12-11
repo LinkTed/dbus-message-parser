@@ -1,6 +1,4 @@
-use crate::message::MessageHeaderField;
 use crate::value::{Array, ObjectPath, Struct, Type, TypeError};
-use std::convert::TryFrom;
 #[cfg(target_family = "unix")]
 use std::os::unix::io::RawFd;
 
@@ -150,25 +148,5 @@ impl Value {
     /// [`Type`]: crate::value::Type
     pub fn get_type(&self) -> Result<Type, TypeError> {
         self.from_value_to_type(0, 0, 0)
-    }
-}
-
-impl From<MessageHeaderField> for Value {
-    fn from(header: MessageHeaderField) -> Self {
-        let (b, v) = match header {
-            MessageHeaderField::Path(s) => (Value::Byte(1), Value::ObjectPath(s)),
-            MessageHeaderField::Interface(s) => (Value::Byte(2), Value::String(s.into())),
-            MessageHeaderField::Member(s) => (Value::Byte(3), Value::String(s.into())),
-            MessageHeaderField::ErrorName(s) => (Value::Byte(4), Value::String(s.into())),
-            MessageHeaderField::ReplySerial(u) => (Value::Byte(5), Value::Uint32(u)),
-            MessageHeaderField::Destination(s) => (Value::Byte(6), Value::String(s.into())),
-            MessageHeaderField::Sender(s) => (Value::Byte(7), Value::String(s.into())),
-            MessageHeaderField::Signature(s) => (Value::Byte(8), Value::Signature(s)),
-            #[cfg(target_family = "unix")]
-            MessageHeaderField::UnixFDs(u) => (Value::Byte(9), Value::Uint32(u)),
-        };
-
-        let struct_ = Struct::try_from(vec![b, Value::Variant(Box::new(v))]).unwrap();
-        Value::Struct(struct_)
     }
 }
