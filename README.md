@@ -3,7 +3,7 @@ A library to encode and decode [DBus message](https://dbus.freedesktop.org/doc/d
 [![Build status](https://github.com/LinkTed/dbus-message-parser/workflows/Continuous%20Integration/badge.svg)](https://github.com/LinkTed/dbus-message-parser/actions?query=workflow%3A%22Continuous+Integration%22)
 [![Code coverage](https://codecov.io/gh/LinkTed/dbus-message-parser/branch/master/graph/badge.svg)](https://codecov.io/gh/LinkTed/dbus-message-parser)
 [![Latest version](https://img.shields.io/crates/v/dbus-message-parser.svg)](https://crates.io/crates/dbus-message-parser)
-[![License](https://img.shields.io/crates/l/dbus-message-parser.svg)](https://opensource.org/licenses/LGPL-3.0)
+[![License](https://img.shields.io/crates/l/dbus-message-parser.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Dependency status](https://deps.rs/repo/github/linkted/dbus-message-parser/status.svg)](https://deps.rs/repo/github/linkted/dbus-message-parser)
 
 ## Usage
@@ -91,9 +91,10 @@ fn decode_method_call() {
 ```
 
 ## License
-This project is licensed under the [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0) license.
+This project is licensed under the [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
+license.
 
 ### Contribution
-Any contribution intentionally submitted for inclusion in `dbus-message-parser` by you, shall be 
-licensed as [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0), without any additional terms or 
-conditions.
+Any contribution intentionally submitted for inclusion in `dbus-message-parser` by you, shall be
+licensed as [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause), without any additional
+terms or conditions.
