@@ -8,7 +8,7 @@ use std::{
 ///
 /// [message type]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-types
 #[repr(u8)]
-#[derive(Debug, PartialOrd, PartialEq, Ord, Eq, Clone)]
+#[derive(Debug, PartialOrd, PartialEq, Ord, Eq, Copy, Clone)]
 pub enum MessageType {
     /// The message is a [`METHOD_CALL`].
     ///

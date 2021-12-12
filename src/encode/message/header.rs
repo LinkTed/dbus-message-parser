@@ -26,7 +26,7 @@ impl Encoder {
             self.byte(0x42)
         }
         // Message type
-        self.byte(message_header.message_type.clone() as u8);
+        self.byte(message_header.message_type as u8);
         // Message flags
         self.byte(message_header.message_flags.bits());
         // Major protocol version
