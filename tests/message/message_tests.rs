@@ -156,6 +156,35 @@ fn get_signature_empty() {
 }
 
 #[test]
+fn wrong_message_type() {
+    let msg = create_method_call()
+        .unknown_property("TestProperty")
+        .method_return();
+    assert!(msg.is_err());
+    check_error_msg(
+        msg.unwrap_err(),
+        "org.freedesktop.DBus.Error.MessageType",
+        "Message is not a method call",
+    );
+}
+
+#[test]
+fn unknown_property() {
+    let msg = create_method_call().unknown_property("TestProperty");
+    check_error_msg(
+        msg,
+        "org.freedesktop.DBus.Error.UnknownProperty",
+        "does not have a property TestProperty",
+    );
+}
+
+#[test]
+fn invalid_args() {
+    let msg = create_method_call().invalid_args("Test reason".to_string());
+    check_error_msg(msg, "org.freedesktop.DBus.Error.InvalidArgs", "Test reason");
+}
+
+#[test]
 fn get_body() {
     let mut msg = create_method_call();
     msg.add_value(Value::Uint32(0));

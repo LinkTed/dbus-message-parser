@@ -7,6 +7,26 @@ use crate::{
 };
 use std::convert::TryInto;
 
+macro_rules! get_field {
+    ($(#[$meta:meta])* $function:ident, $return:ty) => {
+        $(#[$meta])*
+        #[inline]
+        pub const fn $function(&self) -> Option<$return> {
+            self.header.$function()
+        }
+    };
+}
+
+macro_rules! has_field {
+    ($(#[$meta:meta])* $function:ident) => {
+        $(#[$meta])*
+        #[inline]
+        pub const fn $function(&self) -> bool {
+            self.header.$function()
+        }
+    };
+}
+
 /// This represents a DBus [message].
 ///
 /// [message]: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol
@@ -145,87 +165,119 @@ impl Message {
     }
 
     /// Set the serial number.
+    #[inline]
     pub fn set_serial(&mut self, serial: u32) {
         self.header.serial = serial;
     }
 
-    /// Get the [`ReplySerial`] number, if there is one in the header field.
-    ///
-    /// [`ReplySerial`]: crate::message::MessageHeaderField::ReplySerial
-    pub fn get_reply_serial(&self) -> Option<u32> {
-        self.header.get_reply_serial()
-    }
+    get_field!(
+        /// Get the [`path`], if there is one in the header field.
+        ///
+        /// [`path`]: crate::message::MessageHeaderFields::path
+        get_path,
+        &ObjectPath
+    );
 
-    /// Get the [`Path`], if there is one in the header field.
-    ///
-    /// [`Path`]: crate::message::MessageHeaderField::ReplySerial
-    pub fn get_path(&self) -> Option<&ObjectPath> {
-        self.header.get_path()
-    }
+    has_field!(
+        /// It is true if the message contains a [`path`] in the header fields.
+        ///
+        /// [`path`]: crate::message::MessageHeaderField::path
+        has_path
+    );
 
-    /// It is true if the message contains an [`Interface`] in the header fields.
-    ///
-    /// [`Interface`]: crate::message::MessageHeaderField::Interface
-    #[inline]
-    pub fn has_interface(&self) -> bool {
-        self.header.has_interface()
-    }
+    get_field!(
+        /// Get the [`interface`], if there is one in the header field.
+        ///
+        /// [`interface`]: crate::message::MessageHeaderFields::interface
+        get_interface,
+        &Interface
+    );
 
-    /// Get the [`Interface`], if there is one in the header fields.
-    ///
-    /// [`Interface`]: crate::message::MessageHeaderField::Interface
-    pub fn get_interface(&self) -> Option<&Interface> {
-        self.header.get_interface()
-    }
+    has_field!(
+        /// It is true if the message contains an [`interface`] in the header fields.
+        ///
+        /// [`interface`]: crate::message::MessageHeaderFields::interface
+        has_interface
+    );
 
-    /// It is true if the message contains an [`Member`] in the header fields.
-    ///
-    /// [`Member`]: crate::message::MessageHeaderField::Member
-    #[inline]
-    pub fn has_member(&self) -> bool {
-        self.header.has_member()
-    }
+    get_field!(
+        /// Get the [`member`], if there is one in the header field.
+        ///
+        /// [`member`]: crate::message::MessageHeaderFields::member
+        get_member,
+        &Member
+    );
 
-    /// Get the [`Member`], if there is one in the header field.
-    ///
-    /// [`Member`]: crate::message::MessageHeaderField::Member
-    pub fn get_member(&self) -> Option<&Member> {
-        self.header.get_member()
-    }
+    has_field!(
+        /// It is true if the message contains a [`member`] in the header fields.
+        ///
+        /// [`member`]: crate::message::MessageHeaderFields::member
+        has_member
+    );
 
-    /// It is true if the message contains an [`ErrorName`] in the header fields.
-    ///
-    /// [`ErrorName`]: crate::message::MessageHeaderField::ErrorName
-    #[inline]
-    pub fn has_error_name(&self) -> bool {
-        self.header.has_error_name()
-    }
+    get_field!(
+        /// Get the [`error_name`], if there is one in the header field.
+        ///
+        /// [`error_name`]: crate::message::MessageHeaderFields::error_name
+        get_error_name,
+        &Error
+    );
 
-    /// Get the [`ErrorName`], if there is one in the header field.
-    ///
-    /// [`ErrorName`]: crate::message::MessageHeaderField::ErrorName
-    pub fn get_error_name(&self) -> Option<&Error> {
-        self.header.get_error_name()
-    }
+    has_field!(
+        /// It is true if the message contains an [`error_name`] in the header fields.
+        ///
+        /// [`error_name`]: crate::message::MessageHeaderFields::error_name
+        has_error_name
+    );
 
-    /// Get the [`Sender`], if there is one in the header field.
-    ///
-    /// [`Sender`]: crate::message::MessageHeaderField::Sender
-    pub fn get_sender(&self) -> Option<&Bus> {
-        self.header.get_sender()
-    }
+    get_field!(
+        /// Get the [`destination`], if there is one in the header field.
+        ///
+        /// [`destination`]: crate::message::MessageHeaderFields::destination
+        get_destination,
+        &Bus
+    );
 
-    /// Get the [`Destination`], if there is one in the header field.
-    ///
-    /// [`Destination`]: crate::message::MessageHeaderField::Destination
-    #[inline]
-    pub fn get_destination(&self) -> Option<&Bus> {
-        self.header.get_destination()
-    }
+    has_field!(
+        /// It is true if the message contains a [`destination`] in the header fields.
+        ///
+        /// [`destination`]: crate::message::MessageHeaderFields::destination
+        has_destination
+    );
 
-    /// Get the [`Signature`], if there is one in the header field.
+    get_field!(
+        /// Get the [`sender`], if there is one in the header field.
+        ///
+        /// [`sender`]: crate::message::MessageHeaderFields::sender
+        get_sender,
+        &Bus
+    );
+
+    has_field!(
+        /// It is true if the message contains a [`sender`] in the header fields.
+        ///
+        /// [`sender`]: crate::message::MessageHeaderFields::sender
+        has_sender
+    );
+
+    get_field!(
+        /// Get the [`reply_serial`], if there is one in the header field.
+        ///
+        /// [`reply_serial`]: crate::message::MessageHeaderFields::reply_serial
+        get_reply_serial,
+        u32
+    );
+
+    has_field!(
+        /// It is true if the message contains a [`reply_serial`] in the header fields.
+        ///
+        /// [`reply_serial`]: crate::message::MessageHeaderFields::reply_serial
+        has_reply_serial
+    );
+
+    /// Get the [`signature`], if there is one in the header field.
     ///
-    /// [`Signature`]: crate::message::MessageHeaderField::Signature
+    /// [`signature`]: crate::message::MessageHeaderFields::signature
     pub fn get_signature(&self) -> Result<Vec<Type>, TypeError> {
         let mut signature = Vec::new();
         for value in &self.body {
@@ -236,22 +288,29 @@ impl Message {
         Ok(signature)
     }
 
-    /// Get the [`UnixFDs`], if there is one in the header field.
-    ///
-    /// [`UnixFDs`]: crate::message::MessageHeaderField::UnixFDs
-    #[cfg(target_family = "unix")]
-    pub fn get_unix_fds(&self) -> Option<u32> {
-        self.header.get_unix_fds()
-    }
+    has_field!(
+        /// It is true if the message contains a [`signature`] in the header fields.
+        ///
+        /// [`signature`]: crate::message::MessageHeaderFields::signature
+        has_signature
+    );
 
-    /// It is true if the message contains an `UnixFDs` in the header fields.
-    ///
-    /// [`UnixFDs`]: crate::message::MessageHeaderField::UnixFDs
     #[cfg(target_family = "unix")]
-    #[inline]
-    pub fn has_unix_fds(&self) -> bool {
-        self.header.has_unix_fds()
-    }
+    get_field!(
+        /// Get the [`unix_fds`], if there is one in the header field.
+        ///
+        /// [`unix_fds`]: crate::message::MessageHeaderFields::unix_fds
+        get_unix_fds,
+        u32
+    );
+
+    #[cfg(target_family = "unix")]
+    has_field!(
+        /// It is true if the message contains a [`unix_fds`] in the header fields.
+        ///
+        /// [`unix_fds`]: crate::message::MessageHeaderFields::unix_fds
+        has_unix_fds
+    );
 
     /// Add a new value to the body.
     pub fn add_value(&mut self, value: Value) {
