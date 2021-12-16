@@ -69,7 +69,13 @@ impl<'a> Decoder<'a> {
 
         if body_length == 0 {
             match body_signature {
-                Some(signature) => Err(DecodeError::BodyLengthZero(signature)),
+                Some(signature) => {
+                    if signature.is_empty() {
+                        Ok((message_header, None))
+                    } else {
+                        Err(DecodeError::BodyLengthZero(signature))
+                    }
+                }
                 None => Ok((message_header, None)),
             }
         } else {
@@ -119,7 +125,18 @@ fn message_header_is_le_error() {
 }
 
 #[test]
-fn message_body_signature_error() {
+fn message_body_signature() {
+    let b = Bytes::from_static(
+        b"\x6c\x03\x00\x01\x00\x00\x00\x00\x01\x00\x00\x00\x2e\x00\x00\x00\x04\x01\x73\x00\x11\
+    \x00\x00\x00\x6f\x72\x67\x2e\x65\x78\x61\x6d\x70\x6c\x65\x2e\x65\x72\x72\x6f\x72\x00\x00\x00\
+    \x00\x00\x00\x00\x05\x01\x75\x00\x0a\x00\x00\x00\x08\x01\x67\x00\x00\x00",
+    );
+    let mut decoder = Decoder::new(b);
+    assert!(decoder.message_header().is_ok(),);
+}
+
+#[test]
+fn message_body_signature_error_1() {
     let b = Bytes::from_static(
         b"\x6c\x01\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x64\x00\x00\x00\
     \x01\x01\x6f\x00\x0c\x00\x00\x00\x2f\x6f\x62\x6a\x65\x63\x74\x2f\x70\x61\x74\x68\x00\x00\x00\
@@ -132,5 +149,19 @@ fn message_body_signature_error() {
     assert_eq!(
         decoder.message_header(),
         Err(DecodeError::BodySignatureMissing(1))
+    );
+}
+
+#[test]
+fn message_body_signature_error_2() {
+    let b = Bytes::from_static(
+        b"\x6c\x03\x00\x01\x00\x00\x00\x00\x01\x00\x00\x00\x2f\x00\x00\x00\x04\x01\x73\x00\x11\
+    \x00\x00\x00\x6f\x72\x67\x2e\x65\x78\x61\x6d\x70\x6c\x65\x2e\x65\x72\x72\x6f\x72\x00\x00\x00\
+    \x00\x00\x00\x00\x05\x01\x75\x00\x0a\x00\x00\x00\x08\x01\x67\x00\x01\x73\x00",
+    );
+    let mut decoder = Decoder::new(b);
+    assert_eq!(
+        decoder.message_header(),
+        Err(DecodeError::BodyLengthZero(vec![Type::String]))
     );
 }
